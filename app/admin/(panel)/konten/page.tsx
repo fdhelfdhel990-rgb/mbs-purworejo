@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { createSupabaseBrowserClient } from "../../../../lib/supabase/browser";
+import ImageUploadDropzone from "../../components/image-upload-dropzone";
 import { safeImageUrl } from "../../../data/image-utils";
 
 type HomepageContent = {
@@ -101,35 +102,13 @@ export default function AdminHomepageContent() {
   };
 
   const imageField = (key: "heroImage" | "valuesImage", label: string, hint?: string) => (
-    <div className="admin-field-group is-wide" key={key}>
-      <label>{label}</label>
-      <div className="admin-image-upload-wrap">
-        <input
-          value={content[key]}
-          placeholder="/images/card.jpeg atau https://..."
-          onChange={(e) => setContent((curr) => ({ ...curr, [key]: e.target.value }))}
-        />
-        <label className={`admin-secondary-button ${uploadingKey === key ? "is-disabled" : ""}`} style={{ cursor: "pointer", whiteSpace: "nowrap" }}>
-          {uploadingKey === key ? "Mengunggah…" : "📁 Pilih & Unggah Foto"}
-          <input
-            hidden
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/avif,image/gif"
-            disabled={uploadingKey === key}
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) void handleUpload(key, file);
-            }}
-          />
-        </label>
-      </div>
-      {content[key] && (
-        <div style={{ position: "relative", width: 140, height: 90, borderRadius: 6, overflow: "hidden", border: "1px solid #d5ddd4", marginTop: 8 }}>
-          <Image src={safeImageUrl(content[key])} alt={label} fill sizes="140px" style={{ objectFit: "cover" }} />
-        </div>
-      )}
-      {hint && <small>{hint}</small>}
-    </div>
+    <ImageUploadDropzone
+      key={key}
+      value={content[key]}
+      onChange={(url) => setContent((curr) => ({ ...curr, [key]: url }))}
+      label={label}
+      hint={hint}
+    />
   );
 
   const field = (key: keyof HomepageContent, label: string, multiline = false, hint?: string) => (

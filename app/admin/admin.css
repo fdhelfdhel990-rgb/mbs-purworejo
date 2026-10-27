@@ -165,3 +165,23 @@ body:has(.admin-login-page) .site-header, body:has(.admin-login-page) .site-foot
 .admin-toolbar-btn:hover { background: #e3ede1; border-color: #3b8b40; color: #1e5a23; }
 .admin-live-preview { margin-top: 8px; padding: 14px; background: #fff; border: 1px solid #dbe2d9; border-radius: 6px; max-height: 280px; overflow-y: auto; }
 
+
+/* Modern Clean Upload Dropzone */
+.admin-dropzone { display: block; border: 2px dashed #b8ccb7; border-radius: 8px; background: #fafcfa; padding: 24px 18px; text-align: center; cursor: pointer; transition: border-color .18s, background .18s; }
+.admin-dropzone:hover { border-color: #3b8b40; background: #f2f7f1; }
+.admin-dropzone.is-uploading { opacity: .7; cursor: wait; border-style: solid; }
+.admin-dropzone-inner { display: grid; place-items: center; gap: 4px; }
+.admin-dropzone-icon { font-size: 32px; line-height: 1; margin-bottom: 4px; }
+.admin-dropzone strong { font-size: 13px; color: #1e4523; font-weight: 600; }
+.admin-dropzone p { margin: 0; font-size: 11px; color: #6f7c71; }
+
+.admin-upload-card { display: flex; align-items: center; gap: 14px; padding: 12px; border: 1px solid #dce4dc; border-radius: 8px; background: #fff; }
+.admin-upload-thumb { position: relative; width: 120px; height: 80px; border-radius: 6px; overflow: hidden; background: #eef2ec; flex-shrink: 0; }
+.admin-upload-meta { display: flex; flex-direction: column; gap: 8px; }
+.admin-upload-status { font-size: 11px; font-weight: 600; color: #287438; background: #ebf5ea; padding: 3px 9px; border-radius: 12px; width: fit-content; }
+.admin-upload-actions { display: flex; gap: 8px; align-items: center; }
+
+.admin-breadcrumb-back { font-size: 11px; font-weight: 600; color: var(--green-800); text-decoration: none; margin-bottom: 6px; display: inline-block; }
+.admin-breadcrumb-back:hover { text-decoration: underline; }
+.admin-page-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { createSupabaseBrowserClient } from "../../../lib/supabase/browser";
 import FormattedArticleBody from "../../components/formatted-article-body";
+import ImageUploadDropzone from "./image-upload-dropzone";
 import { safeImageUrl } from "../../data/image-utils";
 
 type CmsTable = "news_articles" | "achievements" | "faqs";
@@ -283,44 +284,17 @@ export default function CollectionManager({
                 );
               }
 
-              // 2. Image Field with Direct Upload
+              // 2. Image Field with Direct Upload (No URL input)
               if (field.type === "image" || field.name === "image_url") {
-                const currentImg = form[field.name];
                 return (
-                  <div className={`admin-field-group ${isWide ? "is-wide" : ""}`} key={field.name}>
-                    <label>{field.label}</label>
-                    <div className="admin-image-upload-wrap">
-                      <input
-                        type="text"
-                        placeholder="https://... atau klik tombol Unggah di samping"
-                        required={field.required}
-                        value={currentImg ?? ""}
-                        onChange={(e) => setForm((curr) => ({ ...curr, [field.name]: e.target.value }))}
-                      />
-                      <label className={`admin-secondary-button ${uploadingField === field.name ? "is-disabled" : ""}`} style={{ cursor: "pointer", whiteSpace: "nowrap" }}>
-                        {uploadingField === field.name ? "Mengunggah…" : "📁 Pilih & Unggah Foto"}
-                        <input
-                          hidden
-                          type="file"
-                          accept="image/jpeg,image/png,image/webp,image/avif,image/gif"
-                          disabled={uploadingField === field.name}
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) void handleFileUpload(field.name, file);
-                          }}
-                        />
-                      </label>
-                    </div>
-                    {currentImg && (
-                      <div className="admin-image-preview-box">
-                        <small>Pratinjau Foto:</small>
-                        <div style={{ position: "relative", width: 140, height: 90, borderRadius: 6, overflow: "hidden", border: "1px solid #d5ddd4", marginTop: 4 }}>
-                          <Image src={safeImageUrl(currentImg)} alt="Pratinjau" fill sizes="140px" style={{ objectFit: "cover" }} />
-                        </div>
-                      </div>
-                    )}
-                    {field.hint && <small>{field.hint}</small>}
-                  </div>
+                  <ImageUploadDropzone
+                    key={field.name}
+                    value={form[field.name]}
+                    onChange={(url) => setForm((curr) => ({ ...curr, [field.name]: url }))}
+                    label={field.label}
+                    hint={field.hint}
+                    required={field.required}
+                  />
                 );
               }
 
