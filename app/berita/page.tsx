@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description: "Berita, cerita, dan kegiatan terbaru Pondok Pesantren Modern MBS Purworejo.",
 };
 
+export const instant = false;
+
 export default async function BeritaPage() {
   const articles = await getPublicNewsArticles();
   return (

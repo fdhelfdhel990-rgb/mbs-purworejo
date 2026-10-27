@@ -7,13 +7,10 @@ export default function ScrollReveal() {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Jangan pernah jalankan scroll-reveal atau manipulasi DOM di dalam panel admin
-    if (pathname?.startsWith("/admin")) return;
-    if (document.querySelector(".admin-shell, .admin-login-page, .admin-main")) return;
+    // Animasi scroll-reveal hanya untuk section di halaman beranda (home)
+    if (pathname !== "/") return;
 
-    const targets = document.querySelectorAll<HTMLElement>(
-      "main:not(.admin-content) > section:not(.hero), main:not(.admin-content) .news-card, main:not(.admin-content) .news-detail-layout > *, main:not(.admin-content) .contact-columns > *",
-    );
+    const targets = document.querySelectorAll<HTMLElement>("main > section:not(.hero)");
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     if (reduceMotion || !("IntersectionObserver" in window)) {

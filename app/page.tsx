@@ -20,6 +20,8 @@ function SectionHeading({
   );
 }
 
+export const instant = false;
+
 export default async function Home() {
   const { settings, articles, achievements, faqs } = await getPublicHomepageContent();
   return (

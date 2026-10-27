@@ -35,7 +35,7 @@ export default async function BeritaDetailPage({
         </nav>
 
         <div className="news-detail-layout">
-          <article className="news-article">
+          <article className="news-article" suppressHydrationWarning>
             <div className="detail-hero-image"><Image src={safeImageUrl(article.image)} alt={`Foto: ${article.title}`} fill priority sizes="(max-width: 900px) 100vw, 66vw" /></div>
             <div className="detail-share-row"><span>Bagikan:</span><NewsShare title={article.title} /></div>
             <h1>{article.title}</h1>
@@ -43,7 +43,7 @@ export default async function BeritaDetailPage({
             <FormattedArticleBody paragraphs={article.paragraphs} />
           </article>
 
-          <aside className="detail-sidebar">
+          <aside className="detail-sidebar" suppressHydrationWarning>
             <form className="detail-search" action="/berita" role="search">
               <label htmlFor="detail-search">Pencarian</label>
               <div><input id="detail-search" name="q" placeholder="Kata Kunci..." /><button type="submit" aria-label="Cari berita"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.3" fill="none" stroke="currentColor" strokeWidth="2" /><path d="m16 16 4.2 4.2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg></button></div>
