@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { NewsArticle } from "../data/news";
+import { safeImageUrl } from "../data/image-utils";
 
 const perPage = 9;
 const iconClass = "material-symbol";
@@ -13,6 +14,15 @@ export default function NewsBrowser({ articles }: { articles: NewsArticle[] }) {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("Semua Berita");
   const [page, setPage] = useState(1);
+
+  const categories = useMemo(() => {
+    const defaultCats = ["Kegiatan", "Pendidikan", "Prestasi"];
+    const set = new Set<string>(defaultCats);
+    articles.forEach((a) => {
+      if (a.category && a.category.trim()) set.add(a.category.trim());
+    });
+    return Array.from(set);
+  }, [articles]);
 
   const filtered = useMemo(() => {
     const normalized = search.trim().toLocaleLowerCase("id");
@@ -58,10 +68,10 @@ export default function NewsBrowser({ articles }: { articles: NewsArticle[] }) {
         <label className="news-filter">
           <span>Jenis Publikasi</span>
           <select value={category} onChange={updateCategory} aria-label="Filter jenis publikasi">
-            <option>Semua Berita</option>
-            <option>Kegiatan</option>
-            <option>Pendidikan</option>
-            <option>Prestasi</option>
+            <option value="Semua Berita">Semua Berita</option>
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
           </select>
         </label>
       </div>
@@ -70,7 +80,7 @@ export default function NewsBrowser({ articles }: { articles: NewsArticle[] }) {
         <div className="news-page-grid">
           {visible.map((article, index) => (
             <Link className="news-card" href={`/berita/detail?id=${article.id}`} key={`${article.id}-${index}`} aria-label={`Baca detail berita: ${article.title}`}>
-              <div className="news-image"><Image src={article.image} alt={`Foto: ${article.title}`} fill sizes="(max-width: 560px) 100vw, (max-width: 900px) 50vw, 33vw" /></div>
+              <div className="news-image"><Image src={safeImageUrl(article.image)} alt={`Foto: ${article.title}`} fill sizes="(max-width: 560px) 100vw, (max-width: 900px) 50vw, 33vw" /></div>
               <div className="news-copy">
                 <span className="news-date">{article.date}</span>
                 <span className="news-category">{article.category}</span>

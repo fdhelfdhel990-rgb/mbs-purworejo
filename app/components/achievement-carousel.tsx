@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { defaultAchievements, type Achievement } from "../data/achievements";
+import { safeImageUrl } from "../data/image-utils";
 
 function Chevron({ direction }: { direction: "left" | "right" }) {
   return (
@@ -101,7 +102,7 @@ export default function AchievementCarousel({ items = defaultAchievements }: { i
               onClick={() => move(item.offset)}
             >
               <Image
-                src={item.image}
+                src={safeImageUrl(item.image, "/images/prestasi1.jpg")}
                 alt={item.offset === 0 ? item.imageAlt || item.title : ""}
                 fill
                 sizes="(max-width: 560px) 54vw, (max-width: 900px) 32vw, 30vw"

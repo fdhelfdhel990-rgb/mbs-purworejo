@@ -2,9 +2,11 @@
 
 import Image from "next/image";
 import { useEffect, useRef } from "react";
+import { safeImageUrl } from "../data/image-utils";
 
 export default function HeroBackdrop({ src = "/images/card.jpeg" }: { src?: string }) {
   const imageRef = useRef<HTMLImageElement>(null);
+  const validSrc = safeImageUrl(src, "/images/card.jpeg");
 
   useEffect(() => {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -36,7 +38,7 @@ export default function HeroBackdrop({ src = "/images/card.jpeg" }: { src?: stri
       <Image
         ref={imageRef}
         className="hero-backdrop-image"
-        src={src}
+        src={validSrc}
         alt=""
         fill
         priority

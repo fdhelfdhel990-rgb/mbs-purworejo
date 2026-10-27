@@ -152,3 +152,16 @@ body:has(.admin-login-page) .site-header, body:has(.admin-login-page) .site-foot
   .admin-media-preview { aspect-ratio: 1.2 / 1; }
   .admin-login-card { padding: 28px 22px; }
 }
+
+/* Enhanced editor & upload components */
+.admin-field-group { display: grid; gap: 6px; }
+.admin-field-group.is-wide { grid-column: 1 / -1; }
+.admin-field-group label { color: #414c43; font-size: 12px; font-weight: 600; }
+.admin-image-upload-wrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.admin-image-preview-box { margin-top: 6px; }
+.admin-image-preview-box small { color: #6f7b71; font-size: 11px; }
+.admin-toolbar { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 8px; background: #f2f5f1; border: 1px solid #dce2da; border-radius: 5px; margin-top: 6px; }
+.admin-toolbar-btn { padding: 4px 8px; font-size: 11px; font-weight: 600; background: #fff; border: 1px solid #cbd5ca; border-radius: 4px; color: #2d382f; cursor: pointer; transition: background .15s, border-color .15s; }
+.admin-toolbar-btn:hover { background: #e3ede1; border-color: #3b8b40; color: #1e5a23; }
+.admin-live-preview { margin-top: 8px; padding: 14px; background: #fff; border: 1px solid #dbe2d9; border-radius: 6px; max-height: 280px; overflow-y: auto; }
+

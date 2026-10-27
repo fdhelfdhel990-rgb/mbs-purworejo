@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { getPublicFooterContent } from "../data/public-cms";
 
 function SocialIcon({ name }: { name: "x" | "instagram" | "youtube" | "email" | "tiktok" }) {
   if (name === "youtube") return <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8ZM9.6 15.6V8.4l6.3 3.6-6.3 3.6Z" /></svg>;
@@ -15,7 +16,9 @@ function ContactIcon({ name }: { name: "phone" | "location" | "email" }) {
   return <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="4.5" width="19" height="15" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.8" /><path d="m3.5 6 8.5 7 8.5-7" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>;
 }
 
-export default function SiteFooter() {
+export default async function SiteFooter() {
+  const footer = await getPublicFooterContent();
+
   return (
     <footer className="site-footer" id="kontak">
       <div className="footer-main content-width">
@@ -24,27 +27,50 @@ export default function SiteFooter() {
             <span className="brand-mark"><Image src="/images/icon.png" alt="" width={38} height={38} /></span>
             <span className="brand-copy"><span>PONDOK PESANTREN MODERN</span><strong>MBS PURWOREJO</strong></span>
           </Link>
-          <p>Berdiri sejak 1986 di Pituruh, Kabupaten Purworejo, Jawa Tengah. Bersama menyiapkan generasi yang berilmu dan berakhlak.</p>
+          <p>{footer.aboutText}</p>
           <div className="social-links">
-            <a href="#kontak" aria-label="X"><SocialIcon name="x" /></a>
-            <a href="#kontak" aria-label="Instagram"><SocialIcon name="instagram" /></a>
-            <a href="#kontak" aria-label="YouTube"><SocialIcon name="youtube" /></a>
-            <a href="mailto:literasiremaja@gmail.com" aria-label="Email"><SocialIcon name="email" /></a>
-            <a href="#kontak" aria-label="TikTok"><SocialIcon name="tiktok" /></a>
+            {footer.xUrl && <a href={footer.xUrl} target="_blank" rel="noreferrer" aria-label="X (Twitter)"><SocialIcon name="x" /></a>}
+            {footer.instagramUrl && <a href={footer.instagramUrl} target="_blank" rel="noreferrer" aria-label="Instagram"><SocialIcon name="instagram" /></a>}
+            {footer.youtubeUrl && <a href={footer.youtubeUrl} target="_blank" rel="noreferrer" aria-label="YouTube"><SocialIcon name="youtube" /></a>}
+            {footer.email && <a href={`mailto:${footer.email}`} aria-label="Email"><SocialIcon name="email" /></a>}
+            {footer.tiktokUrl && <a href={footer.tiktokUrl} target="_blank" rel="noreferrer" aria-label="TikTok"><SocialIcon name="tiktok" /></a>}
           </div>
         </div>
         <div className="footer-links">
           <h3>Jelajahi</h3>
-          <Link href="/#home">Beranda utama</Link><Link href="/#profil">Profil</Link><Link href="/berita">Berita</Link><Link href="/#kontak">Kontak</Link>
+          <Link href="/#home">Beranda utama</Link>
+          <Link href="/#profil">Profil</Link>
+          <Link href="/berita">Berita</Link>
+          <Link href="/#kontak">Kontak</Link>
         </div>
         <div className="footer-contact">
           <h3>Kontak Kami</h3>
-          <a href="https://wa.me/6281234567890"><span className="contact-icon"><ContactIcon name="phone" /></span><span>0812 3456 7890</span></a>
-          <span><span className="contact-icon"><ContactIcon name="location" /></span><span>Jl. Srudutan No. 06, Dukuh Wetan, Pituruh, Purworejo</span></span>
-          <a href="mailto:literasiremaja@gmail.com"><span className="contact-icon"><ContactIcon name="email" /></span><span>literasiremaja@gmail.com</span></a>
+          {footer.whatsappUrl ? (
+            <a href={footer.whatsappUrl} target="_blank" rel="noreferrer">
+              <span className="contact-icon"><ContactIcon name="phone" /></span>
+              <span>{footer.phoneDisplay || footer.phone || "Hubungi Kami"}</span>
+            </a>
+          ) : footer.phone ? (
+            <a href={`tel:${footer.phone}`}>
+              <span className="contact-icon"><ContactIcon name="phone" /></span>
+              <span>{footer.phoneDisplay || footer.phone}</span>
+            </a>
+          ) : null}
+          {footer.address && (
+            <span>
+              <span className="contact-icon"><ContactIcon name="location" /></span>
+              <span>{footer.address}</span>
+            </span>
+          )}
+          {footer.email && (
+            <a href={`mailto:${footer.email}`}>
+              <span className="contact-icon"><ContactIcon name="email" /></span>
+              <span>{footer.email}</span>
+            </a>
+          )}
         </div>
       </div>
-      <div className="footer-bottom">© 2026 MBS Purworejo.</div>
+      <div className="footer-bottom">{footer.copyright}</div>
     </footer>
   );
 }

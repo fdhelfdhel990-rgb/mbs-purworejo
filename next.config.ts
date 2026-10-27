@@ -1,12 +1,18 @@
 import type { NextConfig } from "next";
 
-const mediaBase = process.env.R2_PUBLIC_BASE_URL;
-const mediaUrl = mediaBase ? new URL(mediaBase) : null;
-
 const nextConfig: NextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
-    remotePatterns: mediaUrl ? [{ protocol: mediaUrl.protocol.replace(":", "") as "https" | "http", hostname: mediaUrl.hostname, pathname: `${mediaUrl.pathname.replace(/\/$/, "")}/**` }] : [],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+      {
+        protocol: "http",
+        hostname: "**",
+      },
+    ],
   },
   /* config options here */
   experimental: {

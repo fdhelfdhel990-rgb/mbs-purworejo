@@ -890,3 +890,15 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .news-section + .faq .faq-item summary { min-height: 52px; }
   .faq + .admission { padding-block: 28px; }
 }
+
+/* Rich text styling for articles */
+.article-body .article-h2 { font-size: 17px; font-weight: 700; color: #1e2b21; margin: 22px 0 10px; }
+.article-body .article-h3 { font-size: 14px; font-weight: 600; color: #2d3b30; margin: 18px 0 8px; }
+.article-body .article-ul { margin: 8px 0 14px 20px; list-style-type: disc; }
+.article-body .article-ul li { margin-bottom: 6px; line-height: 1.6; }
+.article-body .article-quote { border-left: 3px solid #1f6b2f; padding: 10px 14px; margin: 14px 0; background: #f3f7f2; color: #2a3d2e; font-style: italic; border-radius: 0 6px 6px 0; }
+.article-body .article-link { color: #1b682b; text-decoration: underline; font-weight: 500; }
+.article-body strong { color: #1a241c; font-weight: 600; }
+.article-body em { font-style: italic; }
+.article-body u { text-decoration: underline; }
+

@@ -3,6 +3,7 @@ import HeroBackdrop from "./components/hero-backdrop";
 import Image from "next/image";
 import Link from "next/link";
 import { getPublicHomepageContent, youtubeEmbedUrl } from "./data/public-cms";
+import { safeImageUrl } from "./data/image-utils";
 
 function SectionHeading({
   eyebrow,
@@ -25,7 +26,7 @@ export default async function Home() {
     <>
       <main>
         <section className="hero" id="home">
-          <HeroBackdrop src={settings.heroImage} />
+          <HeroBackdrop src={safeImageUrl(settings.heroImage)} />
           <div className="hero-clouds" aria-hidden="true">
             <span className="cloud cloud-one" />
             <span className="cloud cloud-two" />
@@ -59,7 +60,7 @@ export default async function Home() {
         </section>
 
         <section className="values content-width" id="keunggulan">
-          <div className="values-bg" aria-hidden="true"><Image src={settings.valuesImage} alt="" fill sizes="(max-width: 900px) 100vw, 50vw" /></div>
+          <div className="values-bg" aria-hidden="true"><Image src={safeImageUrl(settings.valuesImage)} alt="" fill sizes="(max-width: 900px) 100vw, 50vw" /></div>
           <div className="values-copy">
             <h2>{settings.valuesTitle}</h2>
             <p>{settings.valuesDescription}</p>
@@ -83,7 +84,7 @@ export default async function Home() {
             <div className="news-grid">
               {articles.slice(0, 6).map((item) => (
                 <Link className="news-card" href={`/berita/detail?id=${item.id}`} key={item.id}>
-                  <div className="news-image"><Image src={item.image} alt={`Foto: ${item.title}`} fill sizes="(max-width: 560px) 100vw, (max-width: 900px) 50vw, 33vw" /></div>
+                  <div className="news-image"><Image src={safeImageUrl(item.image)} alt={`Foto: ${item.title}`} fill sizes="(max-width: 560px) 100vw, (max-width: 900px) 50vw, 33vw" /></div>
                   <div className="news-copy">
                     <span className="news-date">{item.date}</span>
                     <h3>{item.title}</h3>

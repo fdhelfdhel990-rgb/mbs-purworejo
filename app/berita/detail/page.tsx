@@ -3,7 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import NewsShare from "../../components/news-share";
+import FormattedArticleBody from "../../components/formatted-article-body";
 import { getPublicNewsArticles } from "../../data/public-cms";
+import { safeImageUrl } from "../../data/image-utils";
 
 export const metadata: Metadata = {
   title: "Semangat 20 Relawan Membina Perpustakaan Desa | MBS Purworejo",
@@ -34,13 +36,11 @@ export default async function BeritaDetailPage({
 
         <div className="news-detail-layout">
           <article className="news-article">
-            <div className="detail-hero-image"><Image src={article.image} alt={`Foto: ${article.title}`} fill priority sizes="(max-width: 900px) 100vw, 66vw" /></div>
+            <div className="detail-hero-image"><Image src={safeImageUrl(article.image)} alt={`Foto: ${article.title}`} fill priority sizes="(max-width: 900px) 100vw, 66vw" /></div>
             <div className="detail-share-row"><span>Bagikan:</span><NewsShare title={article.title} /></div>
             <h1>{article.title}</h1>
             <p className="detail-date"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" fill="none" stroke="currentColor" strokeWidth="1.8" /><path d="M7 3v4m10-4v4M3 10h18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>{article.date}</p>
-            <div className="article-body">
-              {article.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-            </div>
+            <FormattedArticleBody paragraphs={article.paragraphs} />
           </article>
 
           <aside className="detail-sidebar">
@@ -53,7 +53,7 @@ export default async function BeritaDetailPage({
               <div className="latest-news-list">
                 {recentNews.map((item) => (
                   <Link className="latest-news-item" href={`/berita/detail?id=${item.id}`} key={item.id}>
-                    <span className="latest-news-image"><Image src={item.image} alt="" fill sizes="56px" /></span>
+                    <span className="latest-news-image"><Image src={safeImageUrl(item.image)} alt="" fill sizes="56px" /></span>
                     <span className="latest-news-copy"><strong>{item.title}</strong><small>{item.date}</small></span>
                   </Link>
                 ))}

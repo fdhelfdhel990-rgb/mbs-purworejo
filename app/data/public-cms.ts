@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { defaultAchievements, type Achievement } from "./achievements";
 import { newsArticles, type NewsArticle } from "./news";
+import { safeImageUrl } from "./image-utils";
 
 export type HomepageSettings = {
   arabic: string;
@@ -24,6 +25,34 @@ export const defaultHomepageSettings: HomepageSettings = {
   valuesTitle: "Mendidik dengan Kasih Sayang, Keteladanan & Inspirasi",
   valuesDescription: "Di MBS Purworejo, pendidikan bukan sekadar transfer ilmu. Proses belajar dirancang untuk membangun karakter, menumbuhkan kepedulian, dan membiasakan santri mengamalkan ilmu dalam keseharian.",
   valuesImage: "/images/santri1.jpg",
+};
+
+export type FooterSettings = {
+  aboutText: string;
+  phone: string;
+  phoneDisplay: string;
+  whatsappUrl: string;
+  address: string;
+  email: string;
+  youtubeUrl: string;
+  instagramUrl: string;
+  tiktokUrl: string;
+  xUrl: string;
+  copyright: string;
+};
+
+export const defaultFooterSettings: FooterSettings = {
+  aboutText: "Berdiri sejak 1986 di Pituruh, Kabupaten Purworejo, Jawa Tengah. Bersama menyiapkan generasi yang berilmu dan berakhlak.",
+  phone: "081234567890",
+  phoneDisplay: "0812 3456 7890",
+  whatsappUrl: "https://wa.me/6281234567890",
+  address: "Jl. Srudutan No. 06, Dukuh Wetan, Pituruh, Purworejo",
+  email: "literasiremaja@gmail.com",
+  youtubeUrl: "https://youtube.com",
+  instagramUrl: "https://instagram.com",
+  tiktokUrl: "https://tiktok.com",
+  xUrl: "https://x.com",
+  copyright: "© 2026 MBS Purworejo. All rights reserved.",
 };
 
 export type FaqItem = { id: string; question: string; answer: string };
@@ -56,12 +85,12 @@ export function youtubeEmbedUrl(value: string) {
 function mapNewsRows(rows: CmsNewsRow[]): NewsArticle[] {
   return rows.map((article) => ({
     id: article.id,
-    image: article.image_url,
-    category: article.category,
+    image: safeImageUrl(article.image_url, "/images/card.jpeg"),
+    category: article.category || "Kegiatan",
     date: article.published_at ? new Date(`${article.published_at}T00:00:00`).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) : "",
     title: article.title,
     excerpt: article.excerpt,
-    paragraphs: Array.isArray(article.paragraphs) ? article.paragraphs as string[] : [],
+    paragraphs: Array.isArray(article.paragraphs) ? article.paragraphs as string[] : typeof article.paragraphs === "string" ? [article.paragraphs] : [],
   }));
 }
 
@@ -84,9 +113,30 @@ export async function getPublicHomepageContent() {
     client.from("faqs").select("*").eq("status", "published").order("sort_order", { ascending: true }),
   ]);
 
-  const settings = settingsResult.data?.data && typeof settingsResult.data.data === "object" ? { ...defaultHomepageSettings, ...(settingsResult.data.data as Partial<HomepageSettings>) } : defaultHomepageSettings;
+  const rawSettings = settingsResult.data?.data && typeof settingsResult.data.data === "object" ? settingsResult.data.data as Partial<HomepageSettings> : null;
+  const settings: HomepageSettings = rawSettings ? {
+    ...defaultHomepageSettings,
+    ...rawSettings,
+    heroImage: safeImageUrl(rawSettings.heroImage, defaultHomepageSettings.heroImage),
+    valuesImage: safeImageUrl(rawSettings.valuesImage, defaultHomepageSettings.valuesImage),
+  } : defaultHomepageSettings;
+
   const articles: NewsArticle[] = articlesResult.error ? newsArticles : mapNewsRows((articlesResult.data ?? []) as unknown as CmsNewsRow[]);
-  const achievements: Achievement[] = achievementResult.error ? defaultAchievements : (achievementResult.data ?? []).map((item) => ({ id: item.id, title: item.title, detail: item.detail, image: item.image_url, imageAlt: item.image_alt }));
+  const achievements: Achievement[] = achievementResult.error ? defaultAchievements : (achievementResult.data ?? []).map((item) => ({
+    id: item.id,
+    title: item.title,
+    detail: item.detail,
+    image: safeImageUrl(item.image_url, "/images/prestasi1.jpg"),
+    imageAlt: item.image_alt || item.title || "Prestasi santri MBS Purworejo",
+  }));
   const faqs: FaqItem[] = faqResult.error ? defaultFaqs : (faqResult.data ?? []).map((item) => ({ id: item.id, question: item.question, answer: item.answer }));
   return { settings, articles, achievements, faqs };
+}
+
+export async function getPublicFooterContent(): Promise<FooterSettings> {
+  const client = getPublicClient();
+  if (!client) return defaultFooterSettings;
+  const { data, error } = await client.from("site_settings").select("data").eq("key", "footer").maybeSingle();
+  if (error || !data?.data || typeof data.data !== "object") return defaultFooterSettings;
+  return { ...defaultFooterSettings, ...(data.data as Partial<FooterSettings>) };
 }
