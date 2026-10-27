@@ -162,3 +162,11 @@ insert into public.faqs (question, answer, sort_order, status) values
 ('Apa saja jenjang pendidikan yang tersedia?','Informasi jenjang dan program pendidikan dapat ditanyakan langsung kepada tim penerimaan santri baru.',3,'published'),
 ('Apakah santri tinggal di asrama?','MBS Purworejo menyediakan lingkungan pesantren dan pendampingan santri. Hubungi kami untuk informasi kehidupan asrama.',4,'published')
 on conflict do nothing;
+
+insert into public.admin_profiles (id, display_name, role)
+select id, 'Admin Utama', 'superadmin'
+from auth.users
+where email = 'mbspwr@gmail.com'
+on conflict (id) do update
+set display_name = excluded.display_name, role = excluded.role, active = true;
+
