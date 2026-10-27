@@ -42,48 +42,34 @@ export function renderInlineText(text: string): React.ReactNode[] {
 export default function FormattedArticleBody({ paragraphs }: { paragraphs: string[] }) {
   if (!paragraphs || paragraphs.length === 0) return null;
 
-  const rendered: React.ReactNode[] = [];
-  let currentList: string[] = [];
+  return (
+    <div className="article-body">
+      {paragraphs.map((p, idx) => {
+        const trimmed = p.trim();
+        if (!trimmed) return null;
 
-  const flushList = (keyPrefix: number) => {
-    if (currentList.length > 0) {
-      rendered.push(
-        <ul key={`ul-${keyPrefix}`} className="article-ul">
-          {currentList.map((item, idx) => (
-            <li key={idx}>{renderInlineText(item)}</li>
-          ))}
-        </ul>
-      );
-      currentList = [];
-    }
-  };
+        // If block is already HTML (e.g. <p>...</p>, <h2>...</h2>, <ul>...</ul>, <blockquote>...</blockquote>)
+        if (/^<[a-z1-6]+[\s>]/i.test(trimmed)) {
+          return <div key={idx} dangerouslySetInnerHTML={{ __html: trimmed }} />;
+        }
 
-  paragraphs.forEach((p, idx) => {
-    const trimmed = p.trim();
-    if (!trimmed) return;
-
-    if (trimmed.startsWith("- ") || trimmed.startsWith("* ") || trimmed.startsWith("• ")) {
-      currentList.push(trimmed.replace(/^[-*•]\s+/, ""));
-      return;
-    }
-
-    flushList(idx);
-
-    if (trimmed.startsWith("### ")) {
-      rendered.push(<h3 key={idx} className="article-h3">{renderInlineText(trimmed.slice(4))}</h3>);
-    } else if (trimmed.startsWith("## ")) {
-      rendered.push(<h2 key={idx} className="article-h2">{renderInlineText(trimmed.slice(3))}</h2>);
-    } else if (trimmed.startsWith("# ")) {
-      rendered.push(<h2 key={idx} className="article-h2">{renderInlineText(trimmed.slice(2))}</h2>);
-    } else if (trimmed.startsWith("> ")) {
-      rendered.push(<blockquote key={idx} className="article-quote">{renderInlineText(trimmed.slice(2))}</blockquote>);
-    } else {
-      rendered.push(<p key={idx}>{renderInlineText(trimmed)}</p>);
-    }
-  });
-
-  flushList(paragraphs.length);
-
-  return <div className="article-body">{rendered}</div>;
+        // Markdown formatting fallback
+        if (trimmed.startsWith("### ")) {
+          return <h3 key={idx} className="article-h3">{renderInlineText(trimmed.slice(4))}</h3>;
+        } else if (trimmed.startsWith("## ") || trimmed.startsWith("# ")) {
+          return <h2 key={idx} className="article-h2">{renderInlineText(trimmed.replace(/^#+\s*/, ""))}</h2>;
+        } else if (trimmed.startsWith("> ")) {
+          return <blockquote key={idx} className="article-quote">{renderInlineText(trimmed.slice(2))}</blockquote>;
+        } else if (trimmed.startsWith("- ") || trimmed.startsWith("* ") || trimmed.startsWith("• ")) {
+          return (
+            <ul key={idx} className="article-ul">
+              <li>{renderInlineText(trimmed.replace(/^[-*•]\s+/, ""))}</li>
+            </ul>
+          );
+        } else {
+          return <p key={idx}>{renderInlineText(trimmed)}</p>;
+        }
+      })}
+    </div>
+  );
 }
-

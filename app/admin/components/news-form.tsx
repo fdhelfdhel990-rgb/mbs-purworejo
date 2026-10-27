@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createSupabaseBrowserClient } from "../../../lib/supabase/browser";
 import ImageUploadDropzone from "./image-upload-dropzone";
-import FormattedArticleBody from "../../components/formatted-article-body";
+import VisualEditor from "./visual-editor";
 
 type NewsFormData = {
   id?: string;
@@ -48,42 +48,10 @@ export default function NewsForm({
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [showPreview, setShowPreview] = useState(false);
-
-  const insertFormat = (format: string) => {
-    const textarea = document.getElementById("field-paragraphs") as HTMLTextAreaElement | null;
-    const currentVal = form.paragraphs || "";
-    if (!textarea) {
-      setForm((curr) => ({ ...curr, paragraphs: currentVal ? `${currentVal}\n${format}` : format }));
-      return;
-    }
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selected = currentVal.substring(start, end);
-
-    let replacement = "";
-    if (format === "bold") replacement = selected ? `**${selected}**` : "**Teks Tebal**";
-    else if (format === "italic") replacement = selected ? `*${selected}*` : "*Teks Miring*";
-    else if (format === "underline") replacement = selected ? `<u>${selected}</u>` : "<u>Teks Garis Bawah</u>";
-    else if (format === "h2") replacement = selected ? `\n## ${selected}\n` : "\n## Subjudul Berita\n";
-    else if (format === "h3") replacement = selected ? `\n### ${selected}\n` : "\n### Subjudul Kecil\n";
-    else if (format === "list") replacement = selected ? selected.split("\n").map((l) => `- ${l}`).join("\n") : "\n- Poin pertama\n- Poin kedua\n";
-    else if (format === "quote") replacement = selected ? `\n> ${selected}\n` : "\n> Kutipan pernyataan\n";
-    else if (format === "link") replacement = selected ? `[${selected}](https://contoh.com)` : "[Nama Tautan](https://contoh.com)";
-
-    const nextVal = currentVal.substring(0, start) + replacement + currentVal.substring(end);
-    setForm((curr) => ({ ...curr, paragraphs: nextVal }));
-
-    setTimeout(() => {
-      textarea.focus();
-      const newPos = start + replacement.length;
-      textarea.setSelectionRange(newPos, newPos);
-    }, 15);
-  };
 
   const handleSave = async (targetStatus?: "published" | "draft") => {
-    if (!form.title.trim()) {
+    const titleClean = form.title.trim();
+    if (!titleClean) {
       setError("Judul berita wajib diisi.");
       return;
     }
@@ -91,7 +59,9 @@ export default function NewsForm({
       setError("Foto utama berita wajib dipilih (klik 'Choose your file').");
       return;
     }
-    if (!form.paragraphs.trim()) {
+
+    const strippedText = form.paragraphs.replace(/<[^>]+>/g, "").trim();
+    if (!strippedText && !form.paragraphs.includes("<img")) {
       setError("Isi artikel berita tidak boleh kosong.");
       return;
     }
@@ -99,16 +69,27 @@ export default function NewsForm({
     setSaving(true);
     setError("");
 
-    const titleClean = form.title.trim();
     // Gunakan judul berita sebagai ringkasan otomatis (dipotong ... jika panjang)
     const autoExcerpt = form.excerpt.trim() || (titleClean.length > 90 ? `${titleClean.slice(0, 87)}...` : titleClean);
     const autoAlt = form.image_alt.trim() || titleClean;
 
     const statusToSave = targetStatus || form.status;
-    const paragraphsArray = form.paragraphs
-      .split("\n")
-      .map((p) => p.trim())
-      .filter(Boolean);
+
+    let paragraphsArray: string[] = [];
+    if (/<(p|div|h[1-6]|ul|ol|blockquote)[\s>]/i.test(form.paragraphs)) {
+      const matches = form.paragraphs.match(/<(p|div|h[1-6]|ul|ol|blockquote)[^>]*>[\s\S]*?<\/\1>/gi);
+      if (matches && matches.length > 0) {
+        paragraphsArray = matches.map((m) => m.trim()).filter((m) => m !== "<p><br></p>" && m !== "<p></p>");
+      } else {
+        paragraphsArray = [form.paragraphs.trim()];
+      }
+    } else {
+      paragraphsArray = form.paragraphs.split("\n").map((p) => p.trim()).filter(Boolean);
+    }
+
+    if (paragraphsArray.length === 0) {
+      paragraphsArray = [form.paragraphs.trim()];
+    }
 
     let id = form.id;
     if (!id) {
@@ -163,7 +144,7 @@ export default function NewsForm({
           </Link>
           <span className="admin-eyebrow">PENGELOLAAN BERITA</span>
           <h1>{isEdit ? "Ubah Berita" : "Tambah Berita Baru"}</h1>
-          <p>Lengkapi informasi dan isi berita di bawah ini, lalu klik Simpan.</p>
+          <p>Tulis artikel dengan editor visual langsung. Format teks langsung berubah tanpa perlu mode preview.</p>
         </div>
         <div className="admin-page-actions">
           <Link href="/admin/berita" className="admin-secondary-button">
@@ -258,52 +239,17 @@ export default function NewsForm({
             hint="Format yang didukung: JPG, PNG, WebP, AVIF hingga 10MB."
           />
 
-          {/* Isi Berita Lengkap - WITH RICH TEXT TOOLBAR */}
+          {/* Isi Berita Lengkap - VISUAL WYSIWYG EDITOR */}
           <div className="admin-field-group is-wide">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <label htmlFor="field-paragraphs">Isi Berita Lengkap</label>
-              <button
-                type="button"
-                className="admin-secondary-button"
-                style={{ minHeight: "28px", padding: "0 8px", fontSize: "11px" }}
-                onClick={() => setShowPreview(!showPreview)}
-              >
-                {showPreview ? "✏️ Mode Edit Teks" : "👁️ Pratinjau Tampilan Artikel"}
-              </button>
-            </div>
-
-            {/* Toolbar Pemformatan */}
-            <div className="admin-toolbar" role="toolbar" aria-label="Toolbar pemformatan teks">
-              <button type="button" className="admin-toolbar-btn" title="Tebal (Bold)" onClick={() => insertFormat("bold")}><b>B</b> Tebal</button>
-              <button type="button" className="admin-toolbar-btn" title="Miring (Italic)" onClick={() => insertFormat("italic")}><i>I</i> Miring</button>
-              <button type="button" className="admin-toolbar-btn" title="Garis Bawah (Underline)" onClick={() => insertFormat("underline")}><u>U</u> Garis Bawah</button>
-              <button type="button" className="admin-toolbar-btn" title="Subjudul H2" onClick={() => insertFormat("h2")}>H2 Judul</button>
-              <button type="button" className="admin-toolbar-btn" title="Subjudul H3" onClick={() => insertFormat("h3")}>H3 Subjudul</button>
-              <button type="button" className="admin-toolbar-btn" title="Daftar Poin" onClick={() => insertFormat("list")}>• Poin</button>
-              <button type="button" className="admin-toolbar-btn" title="Kutipan" onClick={() => insertFormat("quote")}>❝ Kutipan</button>
-              <button type="button" className="admin-toolbar-btn" title="Tautan Link" onClick={() => insertFormat("link")}>🔗 Link</button>
-            </div>
-
-            {showPreview ? (
-              <div className="admin-live-preview">
-                <strong style={{ display: "block", marginBottom: 8, fontSize: 12, color: "#2d6032" }}>
-                  Simulasi Tampilan Bacaan:
-                </strong>
-                <FormattedArticleBody
-                  paragraphs={form.paragraphs.split("\n").filter(Boolean)}
-                />
-              </div>
-            ) : (
-              <textarea
-                id="field-paragraphs"
-                rows={9}
-                required
-                placeholder="Tuliskan isi artikel berita secara lengkap. Tekan Enter untuk membuat paragraf baru. Gunakan toolbar di atas untuk menebalkan (**teks**), memiringkan (*teks*), subjudul (##), atau membuat poin."
-                value={form.paragraphs}
-                onChange={(e) => setForm((curr) => ({ ...curr, paragraphs: e.target.value }))}
-              />
-            )}
-            <small>Pisahkan setiap paragraf dengan menekan tombol Enter.</small>
+            <label>Isi Berita Lengkap (Editor Visual Langsung)</label>
+            <VisualEditor
+              value={form.paragraphs}
+              onChange={(html) => setForm((curr) => ({ ...curr, paragraphs: html }))}
+              placeholder="Ketik artikel berita Anda di sini... Gunakan shortcut Ctrl+B untuk tebal, Ctrl+I untuk miring, Ctrl+U untuk garis bawah, dan Ctrl+Z untuk membatalkan (Undo)."
+            />
+            <small>
+              💡 <strong>Shortcut keyboard:</strong> <code>Ctrl+Z</code> (Undo), <code>Ctrl+Y</code> (Redo), <code>Ctrl+B</code> (Tebal), <code>Ctrl+I</code> (Miring), <code>Ctrl+U</code> (Garis Bawah). Format langsung tampil secara visual.
+            </small>
           </div>
 
           {/* Status */}
@@ -345,4 +291,3 @@ export default function NewsForm({
     </div>
   );
 }
-
