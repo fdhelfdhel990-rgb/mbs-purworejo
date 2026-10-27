@@ -90,6 +90,19 @@ export default function VisualEditor({
   const updateFormatState = () => {
     if (typeof document === "undefined") return;
     try {
+      let isQuote = false;
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0) {
+        let n: Node | null = sel.anchorNode;
+        while (n && n !== editorRef.current) {
+          if (n.nodeType === Node.ELEMENT_NODE && (n as HTMLElement).tagName.toLowerCase() === "blockquote") {
+            isQuote = true;
+            break;
+          }
+          n = n.parentNode;
+        }
+      }
+
       setActiveFormats({
         bold: document.queryCommandState("bold"),
         italic: document.queryCommandState("italic"),
@@ -98,7 +111,7 @@ export default function VisualEditor({
         h3: document.queryCommandValue("formatBlock") === "h3",
         ul: document.queryCommandState("insertUnorderedList"),
         ol: document.queryCommandState("insertOrderedList"),
-        quote: document.queryCommandValue("formatBlock") === "blockquote",
+        quote: isQuote,
       });
     } catch {
       // ignore
@@ -109,6 +122,72 @@ export default function VisualEditor({
     if (!editorRef.current) return;
     editorRef.current.focus();
     document.execCommand(command, false, val);
+    sync();
+  };
+
+  const handleToggleQuote = () => {
+    if (!editorRef.current) return;
+    editorRef.current.focus();
+
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+
+    let node: Node | null = sel.anchorNode;
+    let bqElement: HTMLElement | null = null;
+
+    while (node && node !== editorRef.current) {
+      if (node.nodeType === Node.ELEMENT_NODE && (node as HTMLElement).tagName.toLowerCase() === "blockquote") {
+        bqElement = node as HTMLElement;
+        break;
+      }
+      node = node.parentNode;
+    }
+
+    if (bqElement) {
+      // Toggle OFF: convert back to normal paragraph
+      try {
+        document.execCommand("formatBlock", false, "<p>");
+      } catch {
+        try {
+          document.execCommand("formatBlock", false, "p");
+        } catch {
+          const p = document.createElement("p");
+          p.innerHTML = bqElement.innerHTML;
+          bqElement.parentNode?.replaceChild(p, bqElement);
+        }
+      }
+    } else {
+      // Toggle ON: convert current selection or block to blockquote
+      let success = false;
+      try {
+        success = document.execCommand("formatBlock", false, "<blockquote>");
+      } catch {
+        // fallback
+      }
+      if (!success) {
+        try {
+          success = document.execCommand("formatBlock", false, "blockquote");
+        } catch {
+          // fallback
+        }
+      }
+      if (!success && sel.rangeCount > 0) {
+        try {
+          const range = sel.getRangeAt(0);
+          const bq = document.createElement("blockquote");
+          const selectedContent = range.extractContents();
+          if (selectedContent.textContent?.trim()) {
+            bq.appendChild(selectedContent);
+          } else {
+            bq.innerHTML = "<p><br></p>";
+          }
+          range.insertNode(bq);
+        } catch (domErr) {
+          console.warn("DOM quote fallback error:", domErr);
+        }
+      }
+    }
+
     sync();
   };
 
@@ -224,7 +303,7 @@ export default function VisualEditor({
           className={`admin-toolbar-btn ${activeFormats.quote ? "is-active" : ""}`}
           title="Kutipan"
           onMouseDown={(e) => e.preventDefault()}
-          onClick={() => exec("formatBlock", activeFormats.quote ? "p" : "blockquote")}
+          onClick={handleToggleQuote}
           aria-label="Kutipan"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">

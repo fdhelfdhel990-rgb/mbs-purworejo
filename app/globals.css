@@ -892,14 +892,16 @@ button, a { -webkit-tap-highlight-color: transparent; }
 }
 
 /* Rich text styling for articles */
-.article-body .article-h2 { font-size: 17px; font-weight: 700; color: #1e2b21; margin: 22px 0 10px; }
-.article-body .article-h3 { font-size: 14px; font-weight: 600; color: #2d3b30; margin: 18px 0 8px; }
-.article-body .article-ul { margin: 8px 0 14px 20px; list-style-type: disc; }
-.article-body .article-ul li { margin-bottom: 6px; line-height: 1.6; }
-.article-body .article-quote { border-left: 3px solid #1f6b2f; padding: 10px 14px; margin: 14px 0; background: #f3f7f2; color: #2a3d2e; font-style: italic; border-radius: 0 6px 6px 0; }
-.article-body .article-link { color: #1b682b; text-decoration: underline; font-weight: 500; }
-.article-body strong { color: #1a241c; font-weight: 600; }
-.article-body em { font-style: italic; }
+.article-body .article-h2, .article-body h2 { font-size: 17px; font-weight: 700; color: #1e2b21; margin: 22px 0 10px; }
+.article-body .article-h3, .article-body h3 { font-size: 14px; font-weight: 600; color: #2d3b30; margin: 18px 0 8px; }
+.article-body .article-ul, .article-body ul { margin: 8px 0 14px 24px; list-style-type: disc; }
+.article-body ol { margin: 8px 0 14px 24px; list-style-type: decimal; }
+.article-body .article-ul li, .article-body ul li, .article-body ol li { margin-bottom: 6px; line-height: 1.65; }
+.article-body .article-quote, .article-body blockquote { border-left: 3px solid #1f6b2f; padding: 10px 16px; margin: 14px 0; background: #f3f7f2; color: #2a3d2e; font-style: italic; border-radius: 0 6px 6px 0; line-height: 1.7; }
+.article-body blockquote p { margin: 0; }
+.article-body .article-link, .article-body a { color: #1b682b; text-decoration: underline; font-weight: 500; }
+.article-body strong, .article-body b { color: #1a241c; font-weight: 600; }
+.article-body em, .article-body i { font-style: italic; }
 .article-body u { text-decoration: underline; }
 
 

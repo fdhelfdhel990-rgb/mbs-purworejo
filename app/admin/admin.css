@@ -219,6 +219,7 @@ body:has(.admin-login-page) .site-header, body:has(.admin-login-page) .site-foot
 .admin-visual-canvas ol { list-style-type: decimal; }
 .admin-visual-canvas li { margin-bottom: 4px; }
 .admin-visual-canvas blockquote { border-left: 3px solid #2d7334; padding: 8px 14px; margin: 12px 0; background: #f5f9f4; color: #2f4933; font-style: italic; border-radius: 0 6px 6px 0; }
+.admin-visual-canvas blockquote p { margin: 0; }
 .admin-visual-canvas a { color: #1b682b; text-decoration: underline; }
 .admin-visual-canvas strong, .admin-visual-canvas b { color: #172b1b; font-weight: 700; }
 .admin-visual-canvas em, .admin-visual-canvas i { font-style: italic; }
