@@ -93,32 +93,11 @@ export default function AchievementForm({
       <div className="admin-page-heading">
         <div>
           <Link href="/admin/prestasi" className="admin-breadcrumb-back">
-            ← Kembali ke Galeri Prestasi
+            ← Kembali
           </Link>
           <span className="admin-eyebrow">PENGELOLAAN PRESTASI</span>
           <h1>{isEdit ? "Ubah Prestasi Santri" : "Tambah Prestasi Baru"}</h1>
           <p>Lengkapi informasi capaian santri dan unggah foto/posternya.</p>
-        </div>
-        <div className="admin-page-actions">
-          <Link href="/admin/prestasi" className="admin-secondary-button">
-            Batal
-          </Link>
-          <button
-            type="button"
-            className="admin-secondary-button"
-            disabled={saving}
-            onClick={() => void handleSave("draft")}
-          >
-            {saving ? "Menyimpan…" : "Simpan Draft"}
-          </button>
-          <button
-            type="button"
-            className="admin-primary-button"
-            disabled={saving}
-            onClick={() => void handleSave("published")}
-          >
-            {saving ? "Menyimpan…" : isEdit ? "Simpan Perubahan" : "Terbitkan Prestasi ↗"}
-          </button>
         </div>
       </div>
 

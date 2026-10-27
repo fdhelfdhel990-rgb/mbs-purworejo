@@ -140,32 +140,11 @@ export default function NewsForm({
       <div className="admin-page-heading">
         <div>
           <Link href="/admin/berita" className="admin-breadcrumb-back">
-            ← Kembali ke Daftar Berita
+            ← Kembali
           </Link>
           <span className="admin-eyebrow">PENGELOLAAN BERITA</span>
           <h1>{isEdit ? "Ubah Berita" : "Tambah Berita Baru"}</h1>
           <p>Tulis artikel dengan editor visual langsung. Format teks langsung berubah tanpa perlu mode preview.</p>
-        </div>
-        <div className="admin-page-actions">
-          <Link href="/admin/berita" className="admin-secondary-button">
-            Batal
-          </Link>
-          <button
-            type="button"
-            className="admin-secondary-button"
-            disabled={saving}
-            onClick={() => void handleSave("draft")}
-          >
-            {saving ? "Menyimpan…" : "Simpan Draft"}
-          </button>
-          <button
-            type="button"
-            className="admin-primary-button"
-            disabled={saving}
-            onClick={() => void handleSave("published")}
-          >
-            {saving ? "Menyimpan…" : "Terbitkan Berita ↗"}
-          </button>
         </div>
       </div>
 
@@ -248,7 +227,7 @@ export default function NewsForm({
               placeholder="Ketik artikel berita Anda di sini... Gunakan shortcut Ctrl+B untuk tebal, Ctrl+I untuk miring, Ctrl+U untuk garis bawah, dan Ctrl+Z untuk membatalkan (Undo)."
             />
             <small>
-              💡 <strong>Toolbar:</strong> Link, Poin, Nomor, dan Kutipan. <strong>Shortcut keyboard:</strong> <code>Ctrl+Z</code> (Undo), <code>Ctrl+Y</code> (Redo), <code>Ctrl+B</code> (Tebal), <code>Ctrl+I</code> (Miring), <code>Ctrl+U</code> (Garis Bawah).
+              💡 Format teks langsung tampil seketika. Shortcut: <code>Ctrl+B</code> (Tebal), <code>Ctrl+I</code> (Miring), <code>Ctrl+U</code> (Garis Bawah), <code>Ctrl+Z</code> (Undo).
             </small>
           </div>
 
