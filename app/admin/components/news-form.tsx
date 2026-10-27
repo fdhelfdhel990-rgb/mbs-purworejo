@@ -87,10 +87,6 @@ export default function NewsForm({
       setError("Judul berita wajib diisi.");
       return;
     }
-    if (!form.excerpt.trim()) {
-      setError("Ringkasan berita (excerpt) wajib diisi.");
-      return;
-    }
     if (!form.image_url) {
       setError("Foto utama berita wajib dipilih (klik 'Choose your file').");
       return;
@@ -103,6 +99,11 @@ export default function NewsForm({
     setSaving(true);
     setError("");
 
+    const titleClean = form.title.trim();
+    // Gunakan judul berita sebagai ringkasan otomatis (dipotong ... jika panjang)
+    const autoExcerpt = form.excerpt.trim() || (titleClean.length > 90 ? `${titleClean.slice(0, 87)}...` : titleClean);
+    const autoAlt = form.image_alt.trim() || titleClean;
+
     const statusToSave = targetStatus || form.status;
     const paragraphsArray = form.paragraphs
       .split("\n")
@@ -111,7 +112,7 @@ export default function NewsForm({
 
     let id = form.id;
     if (!id) {
-      const base = form.title
+      const base = titleClean
         .toLocaleLowerCase("id")
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
@@ -122,11 +123,11 @@ export default function NewsForm({
 
     const payload = {
       id,
-      title: form.title.trim(),
+      title: titleClean,
       category: form.category.trim() || "Kegiatan",
-      excerpt: form.excerpt.trim(),
+      excerpt: autoExcerpt,
       image_url: form.image_url,
-      image_alt: form.image_alt.trim() || form.title.trim(),
+      image_alt: autoAlt,
       published_at: form.published_at || new Date().toISOString().slice(0, 10),
       paragraphs: paragraphsArray,
       status: statusToSave,
@@ -248,19 +249,6 @@ export default function NewsForm({
             />
           </label>
 
-          {/* Ringkasan Berita */}
-          <label className="is-wide">
-            Ringkasan Berita (Excerpt)
-            <textarea
-              rows={3}
-              required
-              placeholder="Tuliskan 1-2 kalimat ringkasan yang menarik untuk ditampilkan di kartu berita beranda..."
-              value={form.excerpt}
-              onChange={(e) => setForm((curr) => ({ ...curr, excerpt: e.target.value }))}
-            />
-            <small>Ringkasan singkat ini akan muncul pada kartu berita di halaman utama dan daftar berita.</small>
-          </label>
-
           {/* Foto Utama - CHOOSE YOUR FILE (NO URL INPUT) */}
           <ImageUploadDropzone
             value={form.image_url}
@@ -269,17 +257,6 @@ export default function NewsForm({
             required
             hint="Format yang didukung: JPG, PNG, WebP, AVIF hingga 10MB."
           />
-
-          {/* Deskripsi Foto */}
-          <label className="is-wide">
-            Deskripsi Foto (Alt Text)
-            <input
-              type="text"
-              placeholder="Deskripsi singkat foto untuk aksesibilitas dan SEO..."
-              value={form.image_alt}
-              onChange={(e) => setForm((curr) => ({ ...curr, image_alt: e.target.value }))}
-            />
-          </label>
 
           {/* Isi Berita Lengkap - WITH RICH TEXT TOOLBAR */}
           <div className="admin-field-group is-wide">

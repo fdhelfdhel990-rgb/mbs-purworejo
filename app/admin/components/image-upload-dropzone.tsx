@@ -62,7 +62,6 @@ export default function ImageUploadDropzone({
             />
           </div>
           <div className="admin-upload-meta">
-            <span className="admin-upload-status">✓ Foto Terpasang</span>
             <div className="admin-upload-actions">
               <label className={`admin-secondary-button ${uploading ? "is-disabled" : ""}`} style={{ cursor: "pointer" }}>
                 {uploading ? "Mengunggah…" : "Ganti Foto"}
