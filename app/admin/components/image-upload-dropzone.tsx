@@ -63,10 +63,20 @@ export default function ImageUploadDropzone({
           </div>
           <div className="admin-upload-meta">
             <div className="admin-upload-actions">
-              <label className={`admin-secondary-button ${uploading ? "is-disabled" : ""}`} style={{ cursor: "pointer" }}>
+              <label
+                className={`admin-secondary-button ${uploading ? "is-disabled" : ""}`}
+                style={{
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  textAlign: "center",
+                  lineHeight: 1,
+                }}
+              >
                 {uploading ? "Mengunggah…" : "Ganti Foto"}
                 <input
-                  hidden
+                  style={{ display: "none" }}
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/avif,image/gif"
                   disabled={uploading}
@@ -81,6 +91,13 @@ export default function ImageUploadDropzone({
                 className="admin-danger-button"
                 onClick={handleRemove}
                 disabled={uploading}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  textAlign: "center",
+                  lineHeight: 1,
+                }}
               >
                 Hapus
               </button>

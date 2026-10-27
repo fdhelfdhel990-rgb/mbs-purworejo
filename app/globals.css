@@ -902,3 +902,13 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .article-body em { font-style: italic; }
 .article-body u { text-decoration: underline; }
 
+
+/* Mobile Hamburger Menu Hover & Active */
+@media (max-width: 900px) {
+  .menu-toggle { transition: background-color .18s, border-color .18s, transform .15s !important; border: 1px solid transparent !important; }
+  .menu-toggle:hover, .menu-toggle:focus-visible { background: #eef3ec !important; border-color: #d1ded0 !important; }
+  .menu-toggle:active { background: #e2ede0 !important; transform: scale(0.94); }
+  .menu-toggle:hover span, .menu-toggle:focus-visible span { background: var(--green-800) !important; }
+  .menu-toggle.is-open { background: #eef3ec !important; border-color: #d1ded0 !important; }
+}
+

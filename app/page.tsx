@@ -74,7 +74,7 @@ export default async function Home() {
         <section className="achievements content-width" id="prestasi">
           <div className="achievement-container">
             <SectionHeading title="Galeri Prestasi" />
-            <AchievementCarousel items={achievements} />
+            <AchievementCarousel items={achievements.slice(0, 5)} />
           </div>
         </section>
 

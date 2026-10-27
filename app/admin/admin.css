@@ -180,6 +180,16 @@ body:has(.admin-login-page) .site-header, body:has(.admin-login-page) .site-foot
 .admin-upload-meta { display: flex; flex-direction: column; gap: 8px; }
 .admin-upload-status { font-size: 11px; font-weight: 600; color: #287438; background: #ebf5ea; padding: 3px 9px; border-radius: 12px; width: fit-content; }
 .admin-upload-actions { display: flex; gap: 8px; align-items: center; }
+.admin-upload-actions label.admin-secondary-button,
+.admin-upload-actions button.admin-danger-button {
+  min-height: 36px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: normal;
+}
 
 .admin-breadcrumb-back { font-size: 11px; font-weight: 600; color: var(--green-800); text-decoration: none; margin-bottom: 6px; display: inline-block; }
 .admin-breadcrumb-back:hover { text-decoration: underline; }

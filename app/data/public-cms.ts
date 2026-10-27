@@ -55,6 +55,17 @@ export const defaultFooterSettings: FooterSettings = {
   copyright: "© 2026 MBS Purworejo. All rights reserved.",
 };
 
+export function formatWhatsAppUrl(numberOrUrl?: string): string {
+  if (!numberOrUrl) return "https://wa.me/6281234567890";
+  const trimmed = numberOrUrl.trim();
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return trimmed;
+  }
+  const digits = trimmed.replace(/\D/g, "");
+  const phoneCode = digits.startsWith("0") ? `62${digits.slice(1)}` : digits;
+  return `https://wa.me/${phoneCode || "6281234567890"}`;
+}
+
 export type FaqItem = { id: string; question: string; answer: string };
 type CmsNewsRow = { id: string; title: string; excerpt: string; paragraphs: unknown; image_url: string; category: string; published_at: string | null };
 const defaultFaqs: FaqItem[] = [
@@ -122,7 +133,9 @@ export async function getPublicHomepageContent() {
   } : defaultHomepageSettings;
 
   const articles: NewsArticle[] = articlesResult.error ? newsArticles : mapNewsRows((articlesResult.data ?? []) as unknown as CmsNewsRow[]);
-  const achievements: Achievement[] = achievementResult.error ? defaultAchievements : (achievementResult.data ?? []).map((item) => ({
+  const achievements: Achievement[] = achievementResult.error
+    ? defaultAchievements.slice(0, 5)
+    : (achievementResult.data ?? []).slice(0, 5).map((item) => ({
     id: item.id,
     title: item.title,
     detail: item.detail,

@@ -90,15 +90,15 @@ export default function AdminFooterPage() {
 
         <div className="admin-card-heading admin-settings-heading">
           <div>
-            <h2>Informasi Kontak</h2>
-            <p>Alamat, nomor WhatsApp, dan email resmi.</p>
+            <h2>Tombol WhatsApp Floating & Kontak</h2>
+            <p>Atur nomor tujuan tombol chat WhatsApp di pojok kanan bawah website dan kontak resmi pesantren.</p>
           </div>
         </div>
         <div className="admin-content-form">
-          {field("address", "Alamat Lengkap", false, "Alamat yang tertera pada footer.")}
-          {field("phoneDisplay", "Tampilan Nomor Telepon", false, "Contoh: 0812 3456 7890")}
-          {field("whatsappUrl", "Link WhatsApp", false, "Contoh: https://wa.me/6281234567890")}
-          {field("email", "Email Resmi", false, "Contoh: info@mbspurworejo.sch.id")}
+          {field("whatsappUrl", "Nomor / Link Tombol WhatsApp Floating", false, "Masukkan nomor WA (misal: 081234567890 atau 6281234567890) atau link https://wa.me/...")}
+          {field("phoneDisplay", "Teks Tampilan Nomor Telepon", false, "Contoh: 0812 3456 7890")}
+          {field("address", "Alamat Lengkap Pesantren", false, "Alamat yang tertera pada footer.")}
+          {field("email", "Email Resmi Pesantren", false, "Contoh: info@mbspurworejo.sch.id")}
         </div>
 
         <div className="admin-card-heading admin-settings-heading">
