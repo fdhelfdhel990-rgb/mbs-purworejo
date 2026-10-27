@@ -1,11 +1,84 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createSupabaseBrowserClient } from "../../../lib/supabase/browser";
 import ImageUploadDropzone from "./image-upload-dropzone";
 import VisualEditor from "./visual-editor";
+
+function toValidDateInput(dateVal?: string): string {
+  if (!dateVal) return new Date().toISOString().slice(0, 10);
+  const trimmed = dateVal.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+  if (/^\d{4}-\d{2}-\d{2}/.test(trimmed)) return trimmed.slice(0, 10);
+
+  const months: Record<string, string> = {
+    januari: "01", februari: "02", maret: "03", april: "04", mei: "05", juni: "06",
+    juli: "07", agustus: "08", september: "09", oktober: "10", november: "11", desember: "12"
+  };
+  const parts = trimmed.toLowerCase().split(/[\s,]+/);
+  let day = "";
+  let month = "";
+  let year = "";
+  for (const part of parts) {
+    if (months[part]) {
+      month = months[part];
+    } else if (/^\d{4}$/.test(part)) {
+      year = part;
+    } else if (/^\d{1,2}$/.test(part) && !day) {
+      day = part.padStart(2, "0");
+    }
+  }
+  if (year && month && day) {
+    return `${year}-${month}-${day}`;
+  }
+
+  const parsed = Date.parse(trimmed);
+  if (!isNaN(parsed)) return new Date(parsed).toISOString().slice(0, 10);
+  return new Date().toISOString().slice(0, 10);
+}
+
+function parseContentToParagraphs(htmlContent: string): string[] {
+  const trimmed = htmlContent.trim();
+  if (!trimmed) return [];
+
+  if (typeof window !== "undefined") {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(trimmed, "text/html");
+    const body = doc.body;
+
+    const childNodes = Array.from(body.childNodes);
+    const blocks: string[] = [];
+
+    childNodes.forEach((node) => {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const el = node as HTMLElement;
+        const tag = el.tagName.toLowerCase();
+        // Skip empty paragraphs or line breaks
+        if (
+          (tag === "p" || tag === "div") &&
+          !el.textContent?.trim() &&
+          !el.querySelector("img")
+        ) {
+          return;
+        }
+        blocks.push(el.outerHTML.trim());
+      } else if (node.nodeType === Node.TEXT_NODE) {
+        const text = node.textContent?.trim();
+        if (text) {
+          blocks.push(`<p>${text}</p>`);
+        }
+      }
+    });
+
+    if (blocks.length > 0) {
+      return blocks;
+    }
+  }
+
+  return [trimmed];
+}
 
 type NewsFormData = {
   id?: string;
@@ -37,7 +110,7 @@ export default function NewsForm({
     excerpt: initialData?.excerpt || "",
     image_url: initialData?.image_url || "",
     image_alt: initialData?.image_alt || "",
-    published_at: initialData?.published_at || new Date().toISOString().slice(0, 10),
+    published_at: toValidDateInput(initialData?.published_at),
     paragraphs: initialData?.paragraphs || "",
     status: (initialData?.status as "published" | "draft") || "published",
   });
@@ -45,6 +118,24 @@ export default function NewsForm({
   const [isCustomCategory, setIsCustomCategory] = useState<boolean>(() => {
     return Boolean(initialData?.category && !standardCategories.includes(initialData.category));
   });
+
+  // Synchronize when initialData prop changes (e.g. user selects another article)
+  useEffect(() => {
+    if (initialData) {
+      setForm({
+        id: initialData.id || "",
+        title: initialData.title || "",
+        category: initialData.category || "Kegiatan",
+        excerpt: initialData.excerpt || "",
+        image_url: initialData.image_url || "",
+        image_alt: initialData.image_alt || "",
+        published_at: toValidDateInput(initialData.published_at),
+        paragraphs: initialData.paragraphs || "",
+        status: (initialData.status as "published" | "draft") || "published",
+      });
+      setIsCustomCategory(Boolean(initialData.category && !standardCategories.includes(initialData.category)));
+    }
+  }, [initialData]);
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -74,22 +165,7 @@ export default function NewsForm({
     const autoAlt = form.image_alt.trim() || titleClean;
 
     const statusToSave = targetStatus || form.status;
-
-    let paragraphsArray: string[] = [];
-    if (/<(p|div|h[1-6]|ul|ol|blockquote)[\s>]/i.test(form.paragraphs)) {
-      const matches = form.paragraphs.match(/<(p|div|h[1-6]|ul|ol|blockquote)[^>]*>[\s\S]*?<\/\1>/gi);
-      if (matches && matches.length > 0) {
-        paragraphsArray = matches.map((m) => m.trim()).filter((m) => m !== "<p><br></p>" && m !== "<p></p>");
-      } else {
-        paragraphsArray = [form.paragraphs.trim()];
-      }
-    } else {
-      paragraphsArray = form.paragraphs.split("\n").map((p) => p.trim()).filter(Boolean);
-    }
-
-    if (paragraphsArray.length === 0) {
-      paragraphsArray = [form.paragraphs.trim()];
-    }
+    const paragraphsArray = parseContentToParagraphs(form.paragraphs);
 
     let id = form.id;
     if (!id) {
@@ -109,7 +185,7 @@ export default function NewsForm({
       excerpt: autoExcerpt,
       image_url: form.image_url,
       image_alt: autoAlt,
-      published_at: form.published_at || new Date().toISOString().slice(0, 10),
+      published_at: toValidDateInput(form.published_at),
       paragraphs: paragraphsArray,
       status: statusToSave,
       updated_at: new Date().toISOString(),
@@ -118,15 +194,27 @@ export default function NewsForm({
     try {
       const client = createSupabaseBrowserClient();
       const query = client.from("news_articles");
-      const result = isEdit
-        ? await query.update(payload).eq("id", id)
-        : await query.upsert(payload);
-
-      if (result.error) {
-        throw new Error(result.error.message);
+      if (isEdit) {
+        const updateRes = await query.update(payload).eq("id", id).select();
+        if (updateRes.error) {
+          throw new Error(updateRes.error.message);
+        }
+        if (!updateRes.data || updateRes.data.length === 0) {
+          // Article was a fallback dummy in memory, insert into DB now
+          const insertRes = await query.insert(payload);
+          if (insertRes.error) throw new Error(insertRes.error.message);
+        }
+      } else {
+        const insertRes = await query.insert(payload);
+        if (insertRes.error) throw new Error(insertRes.error.message);
       }
 
-      await fetch("/api/admin/revalidate", { method: "POST" });
+      try {
+        await fetch("/api/admin/revalidate", { method: "POST" });
+      } catch (revErr) {
+        console.warn("Revalidate notification:", revErr);
+      }
+
       router.push("/admin/berita");
       router.refresh();
     } catch (saveError) {

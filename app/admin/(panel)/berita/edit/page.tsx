@@ -1,15 +1,50 @@
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import NewsForm from "../../../components/news-form";
 import { createSupabaseServerClient } from "../../../../../lib/supabase/server";
 import { getPublicNewsArticles } from "../../../../data/public-cms";
+
+function toValidDateInput(dateVal?: string): string {
+  if (!dateVal) return new Date().toISOString().slice(0, 10);
+  const trimmed = dateVal.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+  if (/^\d{4}-\d{2}-\d{2}/.test(trimmed)) return trimmed.slice(0, 10);
+
+  const months: Record<string, string> = {
+    januari: "01", februari: "02", maret: "03", april: "04", mei: "05", juni: "06",
+    juli: "07", agustus: "08", september: "09", oktober: "10", november: "11", desember: "12"
+  };
+  const parts = trimmed.toLowerCase().split(/[\s,]+/);
+  let day = "";
+  let month = "";
+  let year = "";
+  for (const part of parts) {
+    if (months[part]) {
+      month = months[part];
+    } else if (/^\d{4}$/.test(part)) {
+      year = part;
+    } else if (/^\d{1,2}$/.test(part) && !day) {
+      day = part.padStart(2, "0");
+    }
+  }
+  if (year && month && day) {
+    return `${year}-${month}-${day}`;
+  }
+
+  const parsed = Date.parse(trimmed);
+  if (!isNaN(parsed)) return new Date(parsed).toISOString().slice(0, 10);
+  return new Date().toISOString().slice(0, 10);
+}
 
 export default async function AdminNewsEditPage({
   searchParams,
 }: {
   searchParams: Promise<{ id?: string }>;
 }) {
-  const { id } = await searchParams;
-  if (!id) notFound();
+  await connection();
+  const rawId = (await searchParams).id;
+  if (!rawId) notFound();
+  const id = decodeURIComponent(rawId).trim();
 
   let articleData: {
     id: string;
@@ -62,12 +97,12 @@ export default async function AdminNewsEditPage({
     excerpt: articleData.excerpt,
     image_url: articleData.image_url,
     image_alt: articleData.image_alt || "",
-    published_at: articleData.published_at || "",
+    published_at: toValidDateInput(articleData.published_at || ""),
     paragraphs: Array.isArray(articleData.paragraphs)
       ? articleData.paragraphs.join("\n")
       : String(articleData.paragraphs || ""),
     status: (articleData.status as "published" | "draft") || "published",
   };
 
-  return <NewsForm initialData={formattedInitialData} isEdit={true} />;
+  return <NewsForm key={formattedInitialData.id} initialData={formattedInitialData} isEdit={true} />;
 }

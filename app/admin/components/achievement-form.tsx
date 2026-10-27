@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createSupabaseBrowserClient } from "../../../lib/supabase/browser";
@@ -39,6 +39,20 @@ export default function AchievementForm({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    if (initialData) {
+      setForm({
+        id: initialData.id || "",
+        title: initialData.title || "",
+        detail: initialData.detail || "",
+        image_url: initialData.image_url || "",
+        year: initialData.year ?? new Date().getFullYear(),
+        sort_order: initialData.sort_order ?? 0,
+        status: (initialData.status as "published" | "draft") || "published",
+      });
+    }
+  }, [initialData]);
+
   const handleSave = async (targetStatus?: "published" | "draft") => {
     if (!form.title.trim()) {
       setError("Judul prestasi wajib diisi.");
@@ -71,15 +85,26 @@ export default function AchievementForm({
     try {
       const client = createSupabaseBrowserClient();
       const query = client.from("achievements");
-      const result = isEdit && form.id
-        ? await query.update(payload).eq("id", form.id)
-        : await query.insert(payload);
-
-      if (result.error) {
-        throw new Error(result.error.message);
+      if (isEdit && form.id) {
+        const updateRes = await query.update(payload).eq("id", form.id).select();
+        if (updateRes.error) {
+          throw new Error(updateRes.error.message);
+        }
+        if (!updateRes.data || updateRes.data.length === 0) {
+          const insertRes = await query.insert(payload);
+          if (insertRes.error) throw new Error(insertRes.error.message);
+        }
+      } else {
+        const insertRes = await query.insert(payload);
+        if (insertRes.error) throw new Error(insertRes.error.message);
       }
 
-      await fetch("/api/admin/revalidate", { method: "POST" });
+      try {
+        await fetch("/api/admin/revalidate", { method: "POST" });
+      } catch (revErr) {
+        console.warn("Revalidate notification:", revErr);
+      }
+
       router.push("/admin/prestasi");
       router.refresh();
     } catch (saveError) {

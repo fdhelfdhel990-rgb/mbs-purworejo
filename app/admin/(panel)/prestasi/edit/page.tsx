@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import AchievementForm from "../../../components/achievement-form";
 import { createSupabaseServerClient } from "../../../../../lib/supabase/server";
 import { defaultAchievements } from "../../../../data/achievements";
@@ -8,8 +9,10 @@ export default async function AdminAchievementEditPage({
 }: {
   searchParams: Promise<{ id?: string }>;
 }) {
-  const { id } = await searchParams;
-  if (!id) notFound();
+  await connection();
+  const rawId = (await searchParams).id;
+  if (!rawId) notFound();
+  const id = decodeURIComponent(rawId).trim();
 
   let achievementData: {
     id?: string;
@@ -63,6 +66,5 @@ export default async function AdminAchievementEditPage({
     status: (achievementData.status as "published" | "draft") || "published",
   };
 
-  return <AchievementForm initialData={formattedInitialData} isEdit={true} />;
+  return <AchievementForm key={formattedInitialData.id || "prestasi"} initialData={formattedInitialData} isEdit={true} />;
 }
-

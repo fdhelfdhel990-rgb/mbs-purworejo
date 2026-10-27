@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 function markdownOrPlainToHtml(text: string): string {
   if (!text) return "<p><br></p>";
   // If it already looks like HTML
-  if (/<(p|div|h[1-6]|ul|ol|blockquote)[\s>]/i.test(text)) {
+  if (/<(p|div|h[1-6]|ul|ol|li|blockquote|strong|b|em|i|u|a)[\s>]/i.test(text)) {
     return text;
   }
 
@@ -150,6 +150,7 @@ export default function VisualEditor({
           type="button"
           className={`admin-toolbar-btn ${activeFormats.bold ? "is-active" : ""}`}
           title="Tebal (Ctrl+B)"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => exec("bold")}
           aria-label="Tebal"
         >
@@ -160,6 +161,7 @@ export default function VisualEditor({
           type="button"
           className={`admin-toolbar-btn ${activeFormats.italic ? "is-active" : ""}`}
           title="Miring (Ctrl+I)"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => exec("italic")}
           aria-label="Miring"
         >
@@ -170,6 +172,7 @@ export default function VisualEditor({
           type="button"
           className={`admin-toolbar-btn ${activeFormats.underline ? "is-active" : ""}`}
           title="Garis Bawah (Ctrl+U)"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => exec("underline")}
           aria-label="Garis Bawah"
         >
@@ -182,6 +185,7 @@ export default function VisualEditor({
           type="button"
           className={`admin-toolbar-btn ${activeFormats.ul ? "is-active" : ""}`}
           title="Daftar Poin"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => exec("insertUnorderedList")}
           aria-label="Daftar Poin"
         >
@@ -199,6 +203,7 @@ export default function VisualEditor({
           type="button"
           className={`admin-toolbar-btn ${activeFormats.ol ? "is-active" : ""}`}
           title="Daftar Nomor"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => exec("insertOrderedList")}
           aria-label="Daftar Nomor"
         >
@@ -218,6 +223,7 @@ export default function VisualEditor({
           type="button"
           className={`admin-toolbar-btn ${activeFormats.quote ? "is-active" : ""}`}
           title="Kutipan"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => exec("formatBlock", activeFormats.quote ? "p" : "blockquote")}
           aria-label="Kutipan"
         >
@@ -230,6 +236,7 @@ export default function VisualEditor({
           type="button"
           className="admin-toolbar-btn"
           title="Tautan / Link"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={handleLink}
           aria-label="Tautan"
         >
