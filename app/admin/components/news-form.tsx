@@ -232,7 +232,7 @@ export default function NewsForm({
           </Link>
           <span className="admin-eyebrow">PENGELOLAAN BERITA</span>
           <h1>{isEdit ? "Ubah Berita" : "Tambah Berita Baru"}</h1>
-          <p>Tulis artikel dengan editor visual langsung. Format teks langsung berubah tanpa perlu mode preview.</p>
+          <p>Tulis dan kelola artikel berita MBS Purworejo.</p>
         </div>
       </div>
 
@@ -306,17 +306,14 @@ export default function NewsForm({
             hint="Format yang didukung: JPG, PNG, WebP, AVIF hingga 10MB."
           />
 
-          {/* Isi Berita Lengkap - VISUAL WYSIWYG EDITOR */}
+          {/* Isi Berita */}
           <div className="admin-field-group is-wide">
-            <label>Isi Berita Lengkap (Editor Visual Langsung)</label>
+            <label>Isi Berita</label>
             <VisualEditor
               value={form.paragraphs}
               onChange={(html) => setForm((curr) => ({ ...curr, paragraphs: html }))}
-              placeholder="Ketik artikel berita Anda di sini... Gunakan shortcut Ctrl+B untuk tebal, Ctrl+I untuk miring, Ctrl+U untuk garis bawah, dan Ctrl+Z untuk membatalkan (Undo)."
+              placeholder="Ketik isi berita di sini..."
             />
-            <small>
-              💡 Format teks langsung tampil seketika. Shortcut: <code>Ctrl+B</code> (Tebal), <code>Ctrl+I</code> (Miring), <code>Ctrl+U</code> (Garis Bawah), <code>Ctrl+Z</code> (Undo).
-            </small>
           </div>
 
           {/* Bottom Actions */}
