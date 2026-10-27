@@ -252,18 +252,6 @@ export default function NewsForm({
             </small>
           </div>
 
-          {/* Status */}
-          <label>
-            Status Publikasi
-            <select
-              value={form.status}
-              onChange={(e) => setForm((curr) => ({ ...curr, status: e.target.value as "published" | "draft" }))}
-            >
-              <option value="published">Terbit (Ditampilkan ke publik)</option>
-              <option value="draft">Draft (Disimpan sementara)</option>
-            </select>
-          </label>
-
           {/* Bottom Actions */}
           <div className="admin-form-actions is-wide">
             <button

@@ -39,8 +39,7 @@ export default function AchievementForm({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = async (targetStatus?: "published" | "draft") => {
     if (!form.title.trim()) {
       setError("Judul prestasi wajib diisi.");
       return;
@@ -53,6 +52,7 @@ export default function AchievementForm({
     setSaving(true);
     setError("");
 
+    const statusToSave = targetStatus || form.status;
     const payload: Record<string, unknown> = {
       title: form.title.trim(),
       detail: form.detail.trim(),
@@ -60,7 +60,7 @@ export default function AchievementForm({
       image_alt: form.title.trim(),
       year: form.year ? Number(form.year) : new Date().getFullYear(),
       sort_order: Number(form.sort_order) || 0,
-      status: form.status,
+      status: statusToSave,
       updated_at: new Date().toISOString(),
     };
 
@@ -105,9 +105,17 @@ export default function AchievementForm({
           </Link>
           <button
             type="button"
+            className="admin-secondary-button"
+            disabled={saving}
+            onClick={() => void handleSave("draft")}
+          >
+            {saving ? "Menyimpan…" : "Simpan Draft"}
+          </button>
+          <button
+            type="button"
             className="admin-primary-button"
             disabled={saving}
-            onClick={handleSave}
+            onClick={() => void handleSave("published")}
           >
             {saving ? "Menyimpan…" : isEdit ? "Simpan Perubahan" : "Terbitkan Prestasi ↗"}
           </button>
@@ -117,7 +125,7 @@ export default function AchievementForm({
       {error && <p className="admin-form-error" role="alert" style={{ marginBottom: "16px" }}>{error}</p>}
 
       <section className="admin-panel-card">
-        <form className="admin-content-form" onSubmit={handleSave}>
+        <form className="admin-content-form" onSubmit={(e) => { e.preventDefault(); void handleSave(); }}>
           {/* Judul Prestasi */}
           <label className="is-wide">
             Judul Prestasi
@@ -173,26 +181,23 @@ export default function AchievementForm({
             <small>Angka lebih kecil tampil lebih awal pada korsel beranda (0, 1, 2, dst).</small>
           </label>
 
-          {/* Status */}
-          <label>
-            Status Publikasi
-            <select
-              value={form.status}
-              onChange={(e) => setForm((curr) => ({ ...curr, status: e.target.value as "published" | "draft" }))}
-            >
-              <option value="published">Terbit (Tampil di beranda)</option>
-              <option value="draft">Draft (Sembunyikan)</option>
-            </select>
-          </label>
-
           {/* Bottom Actions */}
           <div className="admin-form-actions is-wide">
             <button
-              type="submit"
+              type="button"
               className="admin-primary-button"
               disabled={saving}
+              onClick={() => void handleSave("published")}
             >
               {saving ? "Menyimpan…" : isEdit ? "Simpan Perubahan Prestasi" : "Terbitkan Prestasi ↗"}
+            </button>
+            <button
+              type="button"
+              className="admin-secondary-button"
+              disabled={saving}
+              onClick={() => void handleSave("draft")}
+            >
+              Simpan Sebagai Draft
             </button>
             <Link href="/admin/prestasi" className="admin-secondary-button">
               Batal & Kembali
@@ -203,4 +208,3 @@ export default function AchievementForm({
     </div>
   );
 }
-
