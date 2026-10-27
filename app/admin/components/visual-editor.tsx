@@ -144,118 +144,39 @@ export default function VisualEditor({
 
   return (
     <div className="admin-visual-editor-container">
-      {/* Toolbar */}
+      {/* Toolbar - Hanya Link, Poin, Nomor, dan Kutipan */}
       <div className="admin-visual-toolbar" role="toolbar" aria-label="Editor Pemformatan Teks">
-        <div className="admin-toolbar-group">
-          <button
-            type="button"
-            className="admin-toolbar-btn"
-            title="Undo / Batalkan (Ctrl+Z)"
-            onClick={() => exec("undo")}
-          >
-            ↶ Undo
-          </button>
-          <button
-            type="button"
-            className="admin-toolbar-btn"
-            title="Redo / Ulangi (Ctrl+Y atau Ctrl+Shift+Z)"
-            onClick={() => exec("redo")}
-          >
-            ↷ Redo
-          </button>
-        </div>
-
-        <span className="admin-toolbar-separator" />
-
-        <div className="admin-toolbar-group">
-          <button
-            type="button"
-            className={`admin-toolbar-btn ${activeFormats.bold ? "is-active" : ""}`}
-            title="Tebal / Bold (Ctrl+B)"
-            onClick={() => exec("bold")}
-          >
-            <b>B</b> Tebal
-          </button>
-          <button
-            type="button"
-            className={`admin-toolbar-btn ${activeFormats.italic ? "is-active" : ""}`}
-            title="Miring / Italic (Ctrl+I)"
-            onClick={() => exec("italic")}
-          >
-            <i>I</i> Miring
-          </button>
-          <button
-            type="button"
-            className={`admin-toolbar-btn ${activeFormats.underline ? "is-active" : ""}`}
-            title="Garis Bawah / Underline (Ctrl+U)"
-            onClick={() => exec("underline")}
-          >
-            <u>U</u> Garis Bawah
-          </button>
-        </div>
-
-        <span className="admin-toolbar-separator" />
-
-        <div className="admin-toolbar-group">
-          <button
-            type="button"
-            className={`admin-toolbar-btn ${activeFormats.h2 ? "is-active" : ""}`}
-            title="Subjudul H2"
-            onClick={() => exec("formatBlock", activeFormats.h2 ? "p" : "h2")}
-          >
-            H2 Judul
-          </button>
-          <button
-            type="button"
-            className={`admin-toolbar-btn ${activeFormats.h3 ? "is-active" : ""}`}
-            title="Subjudul H3"
-            onClick={() => exec("formatBlock", activeFormats.h3 ? "p" : "h3")}
-          >
-            H3 Subjudul
-          </button>
-          <button
-            type="button"
-            className={`admin-toolbar-btn ${activeFormats.ul ? "is-active" : ""}`}
-            title="Daftar Poin (Bullet List)"
-            onClick={() => exec("insertUnorderedList")}
-          >
-            • Poin
-          </button>
-          <button
-            type="button"
-            className={`admin-toolbar-btn ${activeFormats.ol ? "is-active" : ""}`}
-            title="Daftar Nomor (Numbered List)"
-            onClick={() => exec("insertOrderedList")}
-          >
-            1. Nomor
-          </button>
-          <button
-            type="button"
-            className={`admin-toolbar-btn ${activeFormats.quote ? "is-active" : ""}`}
-            title="Kutipan (Quote)"
-            onClick={() => exec("formatBlock", activeFormats.quote ? "p" : "blockquote")}
-          >
-            ❝ Kutipan
-          </button>
-          <button
-            type="button"
-            className="admin-toolbar-btn"
-            title="Tautan / Link"
-            onClick={handleLink}
-          >
-            🔗 Link
-          </button>
-        </div>
-
-        <span className="admin-toolbar-separator" />
-
         <button
           type="button"
           className="admin-toolbar-btn"
-          title="Hapus Pemformatan"
-          onClick={() => exec("removeFormat")}
+          title="Tautan / Link"
+          onClick={handleLink}
         >
-          🧹 Bersihkan Format
+          🔗 Link
+        </button>
+        <button
+          type="button"
+          className={`admin-toolbar-btn ${activeFormats.ul ? "is-active" : ""}`}
+          title="Daftar Poin (Bullet List)"
+          onClick={() => exec("insertUnorderedList")}
+        >
+          • Poin
+        </button>
+        <button
+          type="button"
+          className={`admin-toolbar-btn ${activeFormats.ol ? "is-active" : ""}`}
+          title="Daftar Nomor (Numbered List)"
+          onClick={() => exec("insertOrderedList")}
+        >
+          1. Nomor
+        </button>
+        <button
+          type="button"
+          className={`admin-toolbar-btn ${activeFormats.quote ? "is-active" : ""}`}
+          title="Kutipan (Quote)"
+          onClick={() => exec("formatBlock", activeFormats.quote ? "p" : "blockquote")}
+        >
+          ❝ Kutipan
         </button>
       </div>
 
@@ -274,3 +195,4 @@ export default function VisualEditor({
     </div>
   );
 }
+

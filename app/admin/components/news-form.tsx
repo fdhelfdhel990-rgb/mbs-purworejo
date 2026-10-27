@@ -248,7 +248,7 @@ export default function NewsForm({
               placeholder="Ketik artikel berita Anda di sini... Gunakan shortcut Ctrl+B untuk tebal, Ctrl+I untuk miring, Ctrl+U untuk garis bawah, dan Ctrl+Z untuk membatalkan (Undo)."
             />
             <small>
-              💡 <strong>Shortcut keyboard:</strong> <code>Ctrl+Z</code> (Undo), <code>Ctrl+Y</code> (Redo), <code>Ctrl+B</code> (Tebal), <code>Ctrl+I</code> (Miring), <code>Ctrl+U</code> (Garis Bawah). Format langsung tampil secara visual.
+              💡 <strong>Toolbar:</strong> Link, Poin, Nomor, dan Kutipan. <strong>Shortcut keyboard:</strong> <code>Ctrl+Z</code> (Undo), <code>Ctrl+Y</code> (Redo), <code>Ctrl+B</code> (Tebal), <code>Ctrl+I</code> (Miring), <code>Ctrl+U</code> (Garis Bawah).
             </small>
           </div>
 
