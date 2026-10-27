@@ -98,7 +98,7 @@ export default function AdminNewsPage() {
         </span>
       </div>
 
-      <section className="admin-collection-list" aria-label="Daftar Berita">
+      <section className="admin-collection-list" aria-label="Daftar Berita" suppressHydrationWarning>
         {loading ? (
           <div className="admin-panel-card admin-empty-state">Memuat data berita…</div>
         ) : filtered.length === 0 ? (

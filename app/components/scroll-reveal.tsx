@@ -1,11 +1,18 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 export default function ScrollReveal() {
+  const pathname = usePathname();
+
   useEffect(() => {
+    // Jangan pernah jalankan scroll-reveal atau manipulasi DOM di dalam panel admin
+    if (pathname?.startsWith("/admin")) return;
+    if (document.querySelector(".admin-shell, .admin-login-page, .admin-main")) return;
+
     const targets = document.querySelectorAll<HTMLElement>(
-      "main > section:not(.hero), main .news-card, main .news-detail-layout > *, main .contact-columns > *",
+      "main:not(.admin-content) > section:not(.hero), main:not(.admin-content) .news-card, main:not(.admin-content) .news-detail-layout > *, main:not(.admin-content) .contact-columns > *",
     );
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -31,7 +38,7 @@ export default function ScrollReveal() {
     });
 
     return () => observer.disconnect();
-  }, []);
+  }, [pathname]);
 
   return null;
 }

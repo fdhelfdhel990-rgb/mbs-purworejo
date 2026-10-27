@@ -77,7 +77,7 @@ export default function AdminAchievementsPage() {
       {notice && <p className="admin-success" role="status">{notice}</p>}
       {error && <p className="admin-form-error" role="alert">{error}</p>}
 
-      <section className="admin-collection-list" aria-label="Daftar Prestasi">
+      <section className="admin-collection-list" aria-label="Daftar Prestasi" suppressHydrationWarning>
         {loading ? (
           <div className="admin-panel-card admin-empty-state">Memuat data prestasi…</div>
         ) : items.length === 0 ? (
