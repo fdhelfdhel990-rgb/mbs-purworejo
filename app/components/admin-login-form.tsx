@@ -20,14 +20,37 @@ export default function AdminLoginForm({ accessError = false }: { accessError?: 
     if (!configured) return;
     setBusy(true);
     setError("");
-    const { error: signInError } = await createSupabaseBrowserClient().auth.signInWithPassword({ email, password });
-    setBusy(false);
-    if (signInError) {
-      setError("Email atau kata sandi tidak sesuai.");
-      return;
+
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+
+    try {
+      const { error: signInError } = await createSupabaseBrowserClient().auth.signInWithPassword({
+        email: cleanEmail,
+        password: cleanPassword,
+      });
+
+      setBusy(false);
+
+      if (signInError) {
+        const msg = signInError.message.toLowerCase();
+        if (msg.includes("email not confirmed")) {
+          setError("Email belum dikonfirmasi di Supabase Auth. Buka Supabase > Authentication > Users, klik titik tiga (...) di akun Anda lalu pilih 'Confirm email'.");
+        } else if (msg.includes("invalid login credentials")) {
+          setError("Email atau kata sandi tidak cocok. Anda bisa memperbarui/mereset password akun melalui dashboard Supabase (Authentication > Users).");
+        } else {
+          setError(`Gagal masuk (${signInError.message}).`);
+        }
+        return;
+      }
+
+      router.replace("/admin");
+      router.refresh();
+    } catch (err: unknown) {
+      setBusy(false);
+      const errorMessage = err instanceof Error ? err.message : "Terjadi kesalahan koneksi";
+      setError(`Koneksi error: ${errorMessage}`);
     }
-    router.replace("/admin");
-    router.refresh();
   };
 
   return (
