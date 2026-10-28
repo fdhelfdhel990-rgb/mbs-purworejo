@@ -21,7 +21,7 @@ export default async function SiteFooter() {
 
   return (
     <footer className="site-footer" id="kontak">
-      <div className="footer-main content-width">
+      <div className="footer-main">
         <div className="footer-about">
           <Link className="brand brand-footer" href="/">
             <span className="brand-mark"><Image src="/images/icon.png" alt="" width={38} height={38} /></span>

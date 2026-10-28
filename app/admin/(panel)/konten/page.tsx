@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
+import Link from "next/link";
 import { createSupabaseBrowserClient } from "../../../../lib/supabase/browser";
 import ImageUploadDropzone from "../../components/image-upload-dropzone";
-import { safeImageUrl } from "../../../data/image-utils";
 
 type HomepageContent = {
   arabic: string;
@@ -46,9 +45,14 @@ export default function AdminHomepageContent() {
         .select("data")
         .eq("key", "homepage")
         .maybeSingle();
+
       if (!active) return;
       if (data?.data && typeof data.data === "object") {
-        setContent({ ...initialContent, ...(data.data as Partial<HomepageContent>) });
+        const loaded = data.data as Partial<HomepageContent>;
+        setContent({
+          ...initialContent,
+          ...loaded,
+        });
       }
       if (loadError) setError("Konten belum termuat. Pastikan migrasi database sudah dijalankan.");
       setLoading(false);
@@ -56,48 +60,46 @@ export default function AdminHomepageContent() {
     return () => { active = false; };
   }, []);
 
-  const handleUpload = async (key: "heroImage" | "valuesImage", file: File) => {
-    setUploadingKey(key);
-    setError("");
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await fetch("/api/admin/media", { method: "POST", body: formData });
-      const data = (await res.json()) as { ok?: boolean; publicUrl?: string; error?: string };
-      if (!res.ok || !data.publicUrl) {
-        throw new Error(data.error || "Gagal mengunggah foto.");
-      }
-      setContent((curr) => ({ ...curr, [key]: data.publicUrl! }));
-      setMessage("Foto berhasil diunggah!");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal mengunggah foto.");
-    } finally {
-      setUploadingKey(null);
-    }
-  };
-
   const save = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSaving(true);
     setMessage("");
     setError("");
-    const client = createSupabaseBrowserClient();
-    const { data: { user } } = await client.auth.getUser();
-    const { error: saveError } = await client
-      .from("site_settings")
-      .upsert({
-        key: "homepage",
-        data: content,
-        public_visible: true,
-        updated_by: user?.id,
-        updated_at: new Date().toISOString(),
-      });
-    setSaving(false);
-    if (saveError) {
-      setError("Konten belum tersimpan. Periksa akses admin dan koneksi database.");
-    } else {
-      const refreshResponse = await fetch("/api/admin/revalidate", { method: "POST" });
-      setMessage(refreshResponse.ok ? "Perubahan beranda berhasil disimpan." : "Konten tersimpan. Halaman publik sedang disinkronkan.");
+
+    try {
+      const client = createSupabaseBrowserClient();
+      const { data: { user } } = await client.auth.getUser();
+
+      // Pertahankan data pendaftaran yang tersimpan di homepage
+      const { data: existingRow } = await client
+        .from("site_settings")
+        .select("data")
+        .eq("key", "homepage")
+        .maybeSingle();
+
+      const existingData = existingRow?.data && typeof existingRow.data === "object" ? existingRow.data : {};
+      const mergedData = { ...existingData, ...content };
+
+      const { error: saveError } = await client
+        .from("site_settings")
+        .upsert({
+          key: "homepage",
+          data: mergedData,
+          public_visible: true,
+          updated_by: user?.id,
+          updated_at: new Date().toISOString(),
+        });
+
+      if (saveError) {
+        throw new Error(saveError.message);
+      }
+
+      await fetch("/api/admin/revalidate", { method: "POST" });
+      setMessage("Perubahan konten beranda berhasil disimpan.");
+    } catch (err) {
+      setError(err instanceof Error ? `Gagal menyimpan: ${err.message}` : "Konten belum tersimpan. Periksa akses admin.");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -111,17 +113,32 @@ export default function AdminHomepageContent() {
     />
   );
 
-  const field = (key: keyof HomepageContent, label: string, multiline = false, hint?: string) => (
-    <label className={multiline ? "is-wide" : ""} key={key}>
-      {label}
-      {multiline ? (
-        <textarea rows={4} value={content[key]} onChange={(e) => setContent((curr) => ({ ...curr, [key]: e.target.value }))} />
-      ) : (
-        <input value={content[key]} onChange={(e) => setContent((curr) => ({ ...curr, [key]: e.target.value }))} />
-      )}
-      {hint && <small>{hint}</small>}
-    </label>
-  );
+  const field = (
+    key: keyof HomepageContent,
+    label: string,
+    multiline = false,
+    hint?: string
+  ) => {
+    const val = typeof content[key] === "string" ? content[key] : "";
+    return (
+      <label className={multiline ? "is-wide" : ""} key={key}>
+        {label}
+        {multiline ? (
+          <textarea
+            rows={4}
+            value={val}
+            onChange={(e) => setContent((curr) => ({ ...curr, [key]: e.target.value }))}
+          />
+        ) : (
+          <input
+            value={val}
+            onChange={(e) => setContent((curr) => ({ ...curr, [key]: e.target.value }))}
+          />
+        )}
+        {hint && <small>{hint}</small>}
+      </label>
+    );
+  };
 
   return (
     <>
@@ -129,7 +146,7 @@ export default function AdminHomepageContent() {
         <div>
           <span className="admin-eyebrow">KONTEN WEBSITE</span>
           <h1>Beranda</h1>
-          <p>Perbarui teks pengenalan utama, gambar hero, dan informasi yang tampil di halaman depan.</p>
+          <p>Perbarui teks pengenalan utama, gambar hero, video profil, dan banner nilai pendidikan di halaman depan.</p>
         </div>
       </div>
 
@@ -168,6 +185,29 @@ export default function AdminHomepageContent() {
           {field("valuesTitle", "Judul Banner", true)}
           {field("valuesDescription", "Deskripsi Banner", true)}
           {imageField("valuesImage", "Foto Banner Nilai Pendidikan", "Pilih foto dari komputer Anda.")}
+        </div>
+
+        {/* Akses Cepat Pendaftaran PSB */}
+        <div className="admin-card-heading admin-settings-heading">
+          <div>
+            <h2>Penerimaan Santri Baru (PSB)</h2>
+            <p>Pengaturan formulir dan jalur pendaftaran telah dipisahkan ke menu khusus.</p>
+          </div>
+        </div>
+        <div style={{ padding: "0 24px 20px" }}>
+          <div style={{ padding: "16px 18px", background: "#f2f7f2", border: "1px solid #d2e4d3", borderRadius: "8px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
+            <div>
+              <strong style={{ fontSize: "14px", color: "#1b4d24", display: "block", marginBottom: "4px" }}>
+                Pengaturan Pendaftaran PSB
+              </strong>
+              <span style={{ fontSize: "12px", color: "#4f6552" }}>
+                Kelola tautan Google Form utama, tahun ajaran, dan tambah/ubah jalur pendaftaran (Prestasi, Reguler, Tahfidz, dsb) di menu khusus.
+              </span>
+            </div>
+            <Link href="/admin/pendaftaran" className="admin-primary-button" style={{ textDecoration: "none", fontSize: "12px", padding: "8px 16px" }}>
+              Buka Pengaturan Pendaftaran 📝
+            </Link>
+          </div>
         </div>
 
         {error && <p className="admin-form-error" role="alert">{error}</p>}

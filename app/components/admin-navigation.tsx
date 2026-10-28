@@ -6,11 +6,11 @@ import { usePathname } from "next/navigation";
 const items = [
   { href: "/admin", label: "Ringkasan", icon: "▦" },
   { href: "/admin/konten", label: "Konten beranda", icon: "⌂" },
+  { href: "/admin/pendaftaran", label: "Pendaftaran (PSB)", icon: "📝" },
   { href: "/admin/berita", label: "Berita", icon: "▤" },
   { href: "/admin/prestasi", label: "Prestasi", icon: "✳" },
   { href: "/admin/faq", label: "FAQ", icon: "?" },
   { href: "/admin/footer", label: "Footer website", icon: "⎘" },
-  { href: "/admin/media", label: "Media library", icon: "▧" },
 ];
 
 export default function AdminNavigation() {

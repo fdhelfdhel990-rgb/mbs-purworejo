@@ -45,7 +45,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="min-h-full flex flex-col">
         <SiteHeader />
-        <ScrollReveal />
         {children}
         <Suspense fallback={<footer className="site-footer" id="kontak" />}>
           <SiteFooter />
@@ -53,6 +52,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Suspense fallback={null}>
           <WhatsAppFab />
         </Suspense>
+        <ScrollReveal />
       </body>
     </html>
   );

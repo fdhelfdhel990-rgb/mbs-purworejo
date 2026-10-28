@@ -1,6 +1,5 @@
-import AchievementForm from "../../../components/achievement-form";
+import { redirect } from "next/navigation";
 
 export default function AdminAchievementCreatePage() {
-  return <AchievementForm isEdit={false} />;
+  redirect("/admin/prestasi");
 }
-

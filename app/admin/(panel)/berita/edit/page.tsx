@@ -36,6 +36,8 @@ function toValidDateInput(dateVal?: string): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+export const instant = false;
+
 export default async function AdminNewsEditPage({
   searchParams,
 }: {

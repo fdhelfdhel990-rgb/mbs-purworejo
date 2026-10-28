@@ -17,12 +17,15 @@ type NewsItem = {
   updated_at: string;
 };
 
+const ITEMS_PER_PAGE = 7;
+
 export default function AdminNewsPage() {
   const [articles, setArticles] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const loadArticles = useCallback(async () => {
     setLoading(true);
@@ -69,6 +72,10 @@ export default function AdminNewsPage() {
     return item.title.toLowerCase().includes(q) || (item.category && item.category.toLowerCase().includes(q));
   });
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const activePage = Math.min(currentPage, totalPages);
+  const paginatedArticles = filtered.slice((activePage - 1) * ITEMS_PER_PAGE, activePage * ITEMS_PER_PAGE);
+
   return (
     <>
       <div className="admin-page-heading">
@@ -85,16 +92,19 @@ export default function AdminNewsPage() {
       {notice && <p className="admin-success" role="status">{notice}</p>}
       {error && <p className="admin-form-error" role="alert">{error}</p>}
 
-      <div style={{ marginBottom: "16px", display: "flex", gap: "10px", alignItems: "center" }}>
+      <div style={{ marginBottom: "16px", display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
         <input
           type="text"
           placeholder="Cari judul atau kategori berita..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setCurrentPage(1);
+          }}
           style={{ maxWidth: "340px", padding: "8px 12px", borderRadius: "5px", border: "1px solid #d9e0d8", fontSize: "12px" }}
         />
         <span style={{ fontSize: "12px", color: "#6e7a70" }}>
-          Total: <strong>{filtered.length}</strong> artikel
+          Total: <strong>{filtered.length}</strong> artikel {totalPages > 1 && `(Halaman ${activePage} dari ${totalPages})`}
         </span>
       </div>
 
@@ -107,7 +117,7 @@ export default function AdminNewsPage() {
             <span>Klik tombol <strong>"Tambah Berita Baru ＋"</strong> di kanan atas untuk membuat artikel pertama Anda.</span>
           </div>
         ) : (
-          filtered.map((item) => (
+          paginatedArticles.map((item) => (
             <article className="admin-panel-card admin-collection-row" key={item.id} style={{ display: "grid", gridTemplateColumns: "80px minmax(0, 1fr) auto", gap: "16px", alignItems: "center" }}>
               <div style={{ position: "relative", width: 80, height: 56, borderRadius: 5, overflow: "hidden", backgroundColor: "#eef2ec" }}>
                 <Image
@@ -166,6 +176,64 @@ export default function AdminNewsPage() {
           ))
         )}
       </section>
+
+      {totalPages > 1 && (
+        <div
+          className="admin-pagination"
+          style={{
+            marginTop: "20px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "12px",
+            padding: "12px 16px",
+            background: "#ffffff",
+            borderRadius: "8px",
+            border: "1px solid #e1e7e0",
+          }}
+        >
+          <span style={{ fontSize: "12px", color: "#5d6b5f" }}>
+            Menampilkan <strong>{(activePage - 1) * ITEMS_PER_PAGE + 1}</strong>–
+            <strong>{Math.min(activePage * ITEMS_PER_PAGE, filtered.length)}</strong> dari{" "}
+            <strong>{filtered.length}</strong> berita
+          </span>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <button
+              type="button"
+              className="pagination-btn pagination-nav"
+              aria-label="Halaman sebelumnya"
+              disabled={activePage === 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+              <button
+                key={pageNum}
+                type="button"
+                className={`pagination-btn pagination-num ${pageNum === activePage ? "is-current" : ""}`}
+                onClick={() => setCurrentPage(pageNum)}
+              >
+                {pageNum}
+              </button>
+            ))}
+            <button
+              type="button"
+              className="pagination-btn pagination-nav"
+              aria-label="Halaman berikutnya"
+              disabled={activePage === totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

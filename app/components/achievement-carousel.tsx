@@ -9,9 +9,9 @@ function Chevron({ direction }: { direction: "left" | "right" }) {
   return (
     <svg className="carousel-chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       {direction === "left" ? (
-        <path d="m15 18-6-6 6-6" />
+        <path d="m15 18-6-6 6-6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
       ) : (
-        <path d="m9 18 6-6-6-6" />
+        <path d="m9 18 6-6-6-6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
       )}
     </svg>
   );
@@ -22,6 +22,7 @@ export default function AchievementCarousel({ items = defaultAchievements }: { i
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
   const touchStartX = useRef<number | null>(null);
+  const pauseTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const move = useCallback((direction: number) => {
     setActive((current) =>
@@ -29,12 +30,29 @@ export default function AchievementCarousel({ items = defaultAchievements }: { i
     );
   }, [displayItems.length]);
 
-  useEffect(() => {
-    if (paused) return;
+  const temporarilyPause = useCallback((duration = 3500) => {
+    setPaused(true);
+    if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current);
+    pauseTimerRef.current = setTimeout(() => {
+      setPaused(false);
+    }, duration);
+  }, []);
 
-    const timer = window.setInterval(() => move(1), 4500);
+  useEffect(() => {
+    return () => {
+      if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (paused || displayItems.length < 2) return;
+
+    const timer = window.setInterval(() => {
+      move(1);
+    }, 2800);
+
     return () => window.clearInterval(timer);
-  }, [move, paused]);
+  }, [move, paused, displayItems.length]);
 
   const activeIndex = active % Math.max(displayItems.length, 1);
   const offsets = displayItems.length > 2 ? [-2, -1, 0, 1, 2] : displayItems.length === 2 ? [-1, 0, 1] : [0];
@@ -46,26 +64,27 @@ export default function AchievementCarousel({ items = defaultAchievements }: { i
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === "ArrowLeft") {
       event.preventDefault();
+      temporarilyPause(3500);
       move(-1);
     } else if (event.key === "ArrowRight") {
       event.preventDefault();
+      temporarilyPause(3500);
       move(1);
     }
   };
 
   const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
     touchStartX.current = event.changedTouches[0]?.clientX ?? null;
-    setPaused(true);
   };
 
   const handleTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
     const startX = touchStartX.current;
     const endX = event.changedTouches[0]?.clientX;
-    if (startX !== null && endX !== undefined && Math.abs(endX - startX) > 45) {
+    if (startX !== null && endX !== undefined && Math.abs(endX - startX) > 40) {
       move(endX < startX ? 1 : -1);
+      temporarilyPause(3500);
     }
     touchStartX.current = null;
-    setPaused(false);
   };
 
   return (
@@ -77,19 +96,16 @@ export default function AchievementCarousel({ items = defaultAchievements }: { i
       onKeyDown={handleKeyDown}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocus={() => setPaused(true)}
-      onBlur={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) setPaused(false);
-      }}
     >
       <div className="achievement-stage">
         <button
           className="achievement-control achievement-previous"
           type="button"
-          disabled={items.length < 2}
-          onClick={() => move(-1)}
+          disabled={displayItems.length < 2}
+          onClick={() => {
+            temporarilyPause(3500);
+            move(-1);
+          }}
           aria-label="Prestasi sebelumnya"
         ><Chevron direction="left" /></button>
 
@@ -100,7 +116,10 @@ export default function AchievementCarousel({ items = defaultAchievements }: { i
               key={displayItems.length > 2 ? item.index : `${item.index}-${item.offset}`}
               style={{ "--slide-offset": item.offset } as React.CSSProperties}
               aria-hidden={item.offset !== 0}
-              onClick={() => move(item.offset)}
+              onClick={() => {
+                temporarilyPause(3500);
+                move(item.offset);
+              }}
             >
               <Image
                 src={safeImageUrl(item.image, "/images/prestasi1.jpg")}
@@ -117,26 +136,19 @@ export default function AchievementCarousel({ items = defaultAchievements }: { i
           className="achievement-control achievement-next"
           type="button"
           disabled={displayItems.length < 2}
-          onClick={() => move(1)}
+          onClick={() => {
+            temporarilyPause(3500);
+            move(1);
+          }}
           aria-label="Prestasi berikutnya"
         ><Chevron direction="right" /></button>
       </div>
 
-      <p className="achievement-caption" aria-live="polite">
-        {displayItems[activeIndex]?.title}
-        <span>{displayItems[activeIndex]?.detail}</span>
-      </p>
-      <div className="achievement-dots" aria-label="Pilih prestasi">
-        {displayItems.map((item, index) => (
-          <button
-            className={`achievement-dot ${index === active ? "is-active" : ""}`}
-            key={item.id}
-            type="button"
-            aria-label={`Tampilkan: ${item.title}`}
-            aria-current={index === activeIndex}
-            onClick={() => setActive(index)}
-          />
-        ))}
+      <div className="achievement-caption" aria-live="polite">
+        <h3 key={`title-${activeIndex}`}>{displayItems[activeIndex]?.title}</h3>
+        {displayItems[activeIndex]?.detail && (
+          <span key={`detail-${activeIndex}`}>{displayItems[activeIndex]?.detail}</span>
+        )}
       </div>
     </div>
   );

@@ -3,6 +3,31 @@ import { defaultAchievements, type Achievement } from "./achievements";
 import { newsArticles, type NewsArticle } from "./news";
 import { safeImageUrl } from "./image-utils";
 
+export type RegistrationTrack = {
+  id: string;
+  name: string;
+  status: string;
+  description: string;
+  url?: string;
+};
+
+export const defaultRegistrationTracks: RegistrationTrack[] = [
+  {
+    id: "prestasi",
+    name: "Jalur prestasi",
+    status: "Pendaftaran dibuka",
+    description: "Seleksi dan informasi menyusul",
+    url: "",
+  },
+  {
+    id: "reguler",
+    name: "Jalur reguler",
+    status: "Pendaftaran santri baru",
+    description: "Informasi jadwal melalui panitia PSB",
+    url: "",
+  },
+];
+
 export type HomepageSettings = {
   arabic: string;
   heroKicker: string;
@@ -13,6 +38,11 @@ export type HomepageSettings = {
   valuesTitle: string;
   valuesDescription: string;
   valuesImage: string;
+  registrationAcademicYear?: string;
+  registrationUrl?: string;
+  registrationPrestasiUrl?: string;
+  registrationRegulerUrl?: string;
+  registrationTracks?: RegistrationTrack[];
 };
 
 export const defaultHomepageSettings: HomepageSettings = {
@@ -25,6 +55,11 @@ export const defaultHomepageSettings: HomepageSettings = {
   valuesTitle: "Mendidik dengan Kasih Sayang, Keteladanan & Inspirasi",
   valuesDescription: "Di MBS Purworejo, pendidikan bukan sekadar transfer ilmu. Proses belajar dirancang untuk membangun karakter, menumbuhkan kepedulian, dan membiasakan santri mengamalkan ilmu dalam keseharian.",
   valuesImage: "/images/santri1.jpg",
+  registrationAcademicYear: "PSB Tahun Ajaran 2026/2027",
+  registrationUrl: "https://forms.google.com",
+  registrationPrestasiUrl: "",
+  registrationRegulerUrl: "",
+  registrationTracks: defaultRegistrationTracks,
 };
 
 export type FooterSettings = {
@@ -130,6 +165,13 @@ export async function getPublicHomepageContent() {
     ...rawSettings,
     heroImage: safeImageUrl(rawSettings.heroImage, defaultHomepageSettings.heroImage),
     valuesImage: safeImageUrl(rawSettings.valuesImage, defaultHomepageSettings.valuesImage),
+    registrationAcademicYear: rawSettings.registrationAcademicYear || defaultHomepageSettings.registrationAcademicYear,
+    registrationUrl: rawSettings.registrationUrl || defaultHomepageSettings.registrationUrl,
+    registrationPrestasiUrl: rawSettings.registrationPrestasiUrl || "",
+    registrationRegulerUrl: rawSettings.registrationRegulerUrl || "",
+    registrationTracks: Array.isArray(rawSettings.registrationTracks) && rawSettings.registrationTracks.length > 0
+      ? rawSettings.registrationTracks
+      : defaultRegistrationTracks,
   } : defaultHomepageSettings;
 
   const articles: NewsArticle[] = articlesResult.error ? newsArticles : mapNewsRows((articlesResult.data ?? []) as unknown as CmsNewsRow[]);

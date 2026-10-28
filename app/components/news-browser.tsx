@@ -100,14 +100,47 @@ export default function NewsBrowser({ articles }: { articles: NewsArticle[] }) {
 
       {filtered.length > perPage && (
         <nav className="news-pagination" aria-label="Navigasi halaman berita">
-          <button type="button" aria-label="Halaman sebelumnya" disabled={currentPage === 1} onClick={() => setPage((value) => Math.max(1, value - 1))}>
-            <span className={iconClass} aria-hidden="true">chevron_left</span>
+          <button
+            type="button"
+            className="pagination-btn pagination-nav"
+            aria-label="Halaman sebelumnya"
+            disabled={currentPage === 1}
+            onClick={() => {
+              setPage((value) => Math.max(1, value - 1));
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
           </button>
           {Array.from({ length: pageCount }, (_, index) => index + 1).map((pageNumber) => (
-            <button className={currentPage === pageNumber ? "is-current" : ""} key={pageNumber} type="button" aria-current={currentPage === pageNumber ? "page" : undefined} onClick={() => setPage(pageNumber)}>{pageNumber}</button>
+            <button
+              className={`pagination-btn pagination-num ${currentPage === pageNumber ? "is-current" : ""}`}
+              key={pageNumber}
+              type="button"
+              aria-current={currentPage === pageNumber ? "page" : undefined}
+              onClick={() => {
+                setPage(pageNumber);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            >
+              {pageNumber}
+            </button>
           ))}
-          <button type="button" aria-label="Halaman berikutnya" disabled={currentPage === pageCount} onClick={() => setPage((value) => Math.min(pageCount, value + 1))}>
-            <span className={iconClass} aria-hidden="true">chevron_right</span>
+          <button
+            type="button"
+            className="pagination-btn pagination-nav"
+            aria-label="Halaman berikutnya"
+            disabled={currentPage === pageCount}
+            onClick={() => {
+              setPage((value) => Math.min(pageCount, value + 1));
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
           </button>
         </nav>
       )}

@@ -7,34 +7,72 @@ export default function ScrollReveal() {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Animasi scroll-reveal hanya untuk section di halaman beranda (home)
-    if (pathname !== "/") return;
+    // Only apply on public user pages, never on admin panel
+    if (pathname.startsWith("/admin")) return;
 
-    const targets = document.querySelectorAll<HTMLElement>("main > section:not(.hero)");
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Defer execution so React finishes hydration completely
+    const timeout = setTimeout(() => {
+      const selectors = [
+        "main > section:not(.hero)",
+        ".profile",
+        ".values",
+        ".values-list article",
+        ".achievements",
+        ".news-section",
+        ".news-card",
+        ".faq",
+        ".faq-item",
+        ".admission",
+        ".schedule",
+        ".news-search",
+        ".news-page-grid .news-card",
+        ".news-article",
+        ".detail-sidebar",
+        ".contact-intro",
+        ".visit-form",
+        ".contact-location",
+        ".site-footer .footer-main",
+      ];
 
-    if (reduceMotion || !("IntersectionObserver" in window)) {
-      targets.forEach((target) => target.classList.add("is-visible"));
-      return;
-    }
+      const elements = Array.from(document.querySelectorAll<HTMLElement>(selectors.join(", ")));
+      if (!elements.length) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          entry.target.classList.add("is-visible");
-          observer.unobserve(entry.target);
-        });
-      },
-      { threshold: 0.08, rootMargin: "0px 0px -7% 0px" },
-    );
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (prefersReducedMotion || !("IntersectionObserver" in window)) {
+        elements.forEach((el) => el.classList.add("is-visible"));
+        return;
+      }
 
-    targets.forEach((target) => {
-      target.classList.add("scroll-reveal");
-      observer.observe(target);
-    });
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-visible");
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        {
+          threshold: 0.08,
+          rootMargin: "0px 0px -40px 0px",
+        },
+      );
 
-    return () => observer.disconnect();
+      elements.forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        // If already visible on initial load or after refresh midway, reveal immediately
+        if (rect.top < window.innerHeight * 0.88 && rect.bottom > 0) {
+          el.classList.add("is-visible");
+        } else {
+          el.classList.add("scroll-reveal");
+          observer.observe(el);
+        }
+      });
+
+      return () => observer.disconnect();
+    }, 200);
+
+    return () => clearTimeout(timeout);
   }, [pathname]);
 
   return null;

@@ -42,36 +42,14 @@ export default function AdminAchievementsPage() {
     void loadAchievements();
   }, [loadAchievements]);
 
-  const handleDelete = async (item: AchievementItem) => {
-    if (!window.confirm(`Yakin ingin menghapus prestasi “${item.title}”? Tindakan ini tidak dapat dibatalkan.`)) {
-      return;
-    }
-
-    const { error: deleteError } = await createSupabaseBrowserClient()
-      .from("achievements")
-      .delete()
-      .eq("id", item.id);
-
-    if (deleteError) {
-      setError("Gagal menghapus prestasi: " + deleteError.message);
-    } else {
-      setNotice(`Prestasi “${item.title}” berhasil dihapus.`);
-      await fetch("/api/admin/revalidate", { method: "POST" });
-      await loadAchievements();
-    }
-  };
-
   return (
     <>
       <div className="admin-page-heading">
         <div>
           <span className="admin-eyebrow">PENGELOLAAN KONTEN</span>
           <h1>Galeri Prestasi</h1>
-          <p>Kelola poster dan keterangan prestasi santri yang ditampilkan pada korsel beranda utama.</p>
+          <p>Kelola 5 poster dan keterangan prestasi santri yang ditampilkan pada korsel beranda utama. Jumlah prestasi ditetapkan tetap (5 item) untuk menjaga keselarasan tampilan korsel 3D.</p>
         </div>
-        <Link href="/admin/prestasi/tambah" className="admin-primary-button admin-heading-action">
-          Tambah Prestasi Baru ＋
-        </Link>
       </div>
 
       {notice && <p className="admin-success" role="status">{notice}</p>}
@@ -82,8 +60,8 @@ export default function AdminAchievementsPage() {
           <div className="admin-panel-card admin-empty-state">Memuat data prestasi…</div>
         ) : items.length === 0 ? (
           <div className="admin-panel-card admin-empty-state">
-            <strong>Belum ada prestasi santri yang tersimpan.</strong>
-            <span>Klik tombol <strong>"Tambah Prestasi Baru ＋"</strong> di atas untuk menambahkan prestasi pertama.</span>
+            <strong>Belum ada data prestasi santri.</strong>
+            <span>Pastikan data awal prestasi telah tersinkronisasi.</span>
           </div>
         ) : (
           items.map((item) => (
@@ -126,15 +104,8 @@ export default function AdminAchievementsPage() {
                   className="admin-secondary-button"
                   style={{ textDecoration: "none" }}
                 >
-                  ✏️ Ubah
+                  ✏️ Ubah Konten
                 </Link>
-                <button
-                  type="button"
-                  className="admin-danger-button"
-                  onClick={() => void handleDelete(item)}
-                >
-                  Hapus
-                </button>
               </div>
             </article>
           ))

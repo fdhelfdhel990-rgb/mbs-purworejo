@@ -2,7 +2,7 @@ import AchievementCarousel from "./components/achievement-carousel";
 import HeroBackdrop from "./components/hero-backdrop";
 import Image from "next/image";
 import Link from "next/link";
-import { getPublicHomepageContent, youtubeEmbedUrl } from "./data/public-cms";
+import { getPublicHomepageContent, youtubeEmbedUrl, defaultRegistrationTracks } from "./data/public-cms";
 import { safeImageUrl } from "./data/image-utils";
 
 function SectionHeading({
@@ -24,6 +24,12 @@ export const instant = false;
 
 export default async function Home() {
   const { settings, articles, achievements, faqs } = await getPublicHomepageContent();
+  const registrationLink = settings.registrationUrl || "https://forms.google.com";
+  const academicYear = settings.registrationAcademicYear || "PSB Tahun Ajaran 2026/2027";
+  const tracks = settings.registrationTracks && settings.registrationTracks.length > 0
+    ? settings.registrationTracks
+    : defaultRegistrationTracks;
+
   return (
     <>
       <main>
@@ -111,8 +117,37 @@ export default async function Home() {
         </section>
 
         <section className="admission content-width" id="pendaftaran">
-          <div className="admission-copy"><span className="eyebrow">Penerimaan santri baru</span><h2>Ayo gali potensi diri<br />bersama MBS Purworejo!</h2><p>Mulai perjalanan belajar yang penuh makna. Tumbuh dalam lingkungan Islami dan raih cita-cita bersama keluarga besar MBS Purworejo.</p><p className="admission-note">Mari bergabung bersama keluarga besar MBS Purworejo.</p><div className="admission-actions"><a className="button button-green" href="https://wa.me/6281234567890">Daftar sekarang <span aria-hidden="true">↗</span></a><a className="button button-gold" href="#jadwal">Info PSB</a></div></div>
-          <div className="schedule" id="jadwal"><span className="schedule-label">Jalur pendaftaran</span><h3>PSB Tahun Ajaran 2026/2027</h3><div className="schedule-row"><strong>Jalur prestasi</strong><span><b>Pendaftaran dibuka</b>Seleksi dan informasi menyusul</span><span className="schedule-status">Daftar</span></div><div className="schedule-row"><strong>Jalur reguler</strong><span><b>Pendaftaran santri baru</b>Informasi jadwal melalui panitia PSB</span><span className="schedule-status">Daftar</span></div></div>
+          <div className="admission-copy">
+            <span className="eyebrow">Penerimaan santri baru</span>
+            <h2>Ayo gali potensi diri<br />bersama MBS Purworejo!</h2>
+            <p>Mulai perjalanan belajar yang penuh makna. Tumbuh dalam lingkungan Islami dan raih cita-cita bersama keluarga besar MBS Purworejo.</p>
+            <p className="admission-note">Mari bergabung bersama keluarga besar MBS Purworejo.</p>
+            <div className="admission-actions">
+              <a className="button button-green" href={registrationLink} target="_blank" rel="noopener noreferrer">
+                Daftar sekarang <span aria-hidden="true">↗</span>
+              </a>
+              <a className="button button-gold" href="#jadwal">Info PSB</a>
+            </div>
+          </div>
+          <div className="schedule" id="jadwal">
+            <span className="schedule-label">Jalur pendaftaran</span>
+            <h3>{academicYear}</h3>
+            {tracks.map((track) => {
+              const trackLink = track.url?.trim() || registrationLink;
+              return (
+                <div className="schedule-row" key={track.id || track.name}>
+                  <strong>{track.name}</strong>
+                  <span>
+                    <b>{track.status}</b>
+                    {track.description}
+                  </span>
+                  <a className="schedule-status" href={trackLink} target="_blank" rel="noopener noreferrer">
+                    Daftar
+                  </a>
+                </div>
+              );
+            })}
+          </div>
         </section>
       </main>
 

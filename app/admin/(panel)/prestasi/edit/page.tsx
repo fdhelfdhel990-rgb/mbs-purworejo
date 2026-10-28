@@ -4,6 +4,8 @@ import AchievementForm from "../../../components/achievement-form";
 import { createSupabaseServerClient } from "../../../../../lib/supabase/server";
 import { defaultAchievements } from "../../../../data/achievements";
 
+export const instant = false;
+
 export default async function AdminAchievementEditPage({
   searchParams,
 }: {

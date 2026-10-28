@@ -26,12 +26,16 @@ export default function CollectionManager({
   description,
   fields,
   summaryField,
+  allowAdd = true,
+  allowDelete = true,
 }: {
   table: CmsTable;
   title: string;
   description: string;
   fields: Field[];
   summaryField: string;
+  allowAdd?: boolean;
+  allowDelete?: boolean;
 }) {
   const [rows, setRows] = useState<CmsRow[]>([]);
   const [editing, setEditing] = useState<CmsRow | null>(null);
@@ -217,9 +221,11 @@ export default function CollectionManager({
           <h1>{title}</h1>
           <p>{description}</p>
         </div>
-        <button className="admin-primary-button admin-heading-action" type="button" onClick={startNew}>
-          Tambah {title.toLocaleLowerCase("id")} <span aria-hidden="true">＋</span>
-        </button>
+        {allowAdd && (
+          <button className="admin-primary-button admin-heading-action" type="button" onClick={startNew}>
+            Tambah {title.toLocaleLowerCase("id")} <span aria-hidden="true">＋</span>
+          </button>
+        )}
       </div>
 
       {notice && <p className="admin-success" role="status">{notice}</p>}
@@ -428,11 +434,13 @@ export default function CollectionManager({
               </div>
               <div className="admin-row-actions">
                 <button type="button" className="admin-secondary-button" onClick={() => startEdit(row)}>
-                  Ubah
+                  ✏️ Ubah
                 </button>
-                <button type="button" className="admin-danger-button" onClick={() => void remove(row)}>
-                  Hapus
-                </button>
+                {allowDelete && (
+                  <button type="button" className="admin-danger-button" onClick={() => void remove(row)}>
+                    Hapus
+                  </button>
+                )}
               </div>
             </article>
           ))

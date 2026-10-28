@@ -2,6 +2,8 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { createSupabaseServerClient } from "../../../lib/supabase/server";
 
+export const instant = false;
+
 export default async function AdminDashboardPage() {
   await connection();
   const supabase = await createSupabaseServerClient();
