@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { defaultAchievements, type Achievement } from "./achievements";
 import { newsArticles, type NewsArticle } from "./news";
 import { safeImageUrl } from "./image-utils";
+import { getSupabaseConfig } from "../../lib/supabase/config";
 
 export type RegistrationTrack = {
   id: string;
@@ -111,9 +112,8 @@ const defaultFaqs: FaqItem[] = [
 ];
 
 function getPublicClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  return url && key ? createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } }) : null;
+  const config = getSupabaseConfig();
+  return config ? createClient(config.url, config.key, { auth: { persistSession: false, autoRefreshToken: false } }) : null;
 }
 
 export function youtubeEmbedUrl(value: string) {
