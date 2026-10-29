@@ -1,9 +1,8 @@
 import { randomUUID } from "node:crypto";
-import { promises as fs } from "node:fs";
-import path from "node:path";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { NextResponse } from "next/server";
+import { describeR2Error, getR2Config } from "../../../../lib/r2/config";
 import { createSupabaseServerClient } from "../../../../lib/supabase/server";
 
 const allowedTypes = new Map([
@@ -51,59 +50,30 @@ export async function POST(request: Request) {
       const uniqueId = randomUUID().slice(0, 8);
       const safeKey = `mbs/${new Date().toISOString().slice(0, 10)}/${Date.now()}-${uniqueId}-${cleanName.replace(/\.[^.]+$/, "")}.${ext}`;
 
-      const accountId = process.env.R2_ACCOUNT_ID;
-      const accessKeyId = process.env.R2_ACCESS_KEY_ID;
-      const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
-      const bucket = process.env.R2_BUCKET_NAME;
-      const publicBaseUrl = process.env.R2_PUBLIC_BASE_URL?.replace(/\/$/, "");
-
-      const isR2Configured = Boolean(
-        accountId &&
-        accessKeyId &&
-        secretAccessKey &&
-        bucket &&
-        publicBaseUrl &&
-        !accountId.startsWith("cfat_") // cfat_ is a token ID, not an Account ID
-      );
-
-      let publicUrl = "";
-
-      // Try Cloudflare R2 if properly configured
-      if (isR2Configured) {
-        try {
-          const client = new S3Client({
-            region: "auto",
-            endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-            credentials: { accessKeyId: accessKeyId!, secretAccessKey: secretAccessKey! },
-          });
-          const fileBuffer = Buffer.from(await file.arrayBuffer());
-          await client.send(
-            new PutObjectCommand({
-              Bucket: bucket,
-              Key: safeKey,
-              Body: fileBuffer,
-              ContentType: fileType,
-            })
-          );
-          publicUrl = `${publicBaseUrl}/${safeKey}`;
-        } catch (r2Error) {
-          console.warn("R2 upload error, falling back to local:", r2Error);
-        }
+      const { config: r2, missing } = getR2Config();
+      if (!r2) {
+        return NextResponse.json({ error: `Pengaturan Cloudflare R2 belum lengkap/valid: ${missing.join(", ")}.` }, { status: 503 });
       }
 
-      // If R2 wasn't used or failed, save locally in public/uploads
-      if (!publicUrl) {
-        const fileBuffer = Buffer.from(await file.arrayBuffer());
-        const uploadsDir = path.join(process.cwd(), "public", "uploads");
-        await fs.mkdir(uploadsDir, { recursive: true });
-        const localFileName = `${Date.now()}-${uniqueId}.${ext}`;
-        await fs.writeFile(path.join(uploadsDir, localFileName), fileBuffer);
-        publicUrl = `/uploads/${localFileName}`;
+      try {
+        await r2.client.send(
+          new PutObjectCommand({
+            Bucket: r2.bucket,
+            Key: safeKey,
+            Body: Buffer.from(await file.arrayBuffer()),
+            ContentType: fileType,
+            CacheControl: "public, max-age=31536000, immutable",
+          })
+        );
+      } catch (r2Error) {
+        console.error("R2 upload error:", r2Error);
+        return NextResponse.json({ error: describeR2Error(r2Error) }, { status: 502 });
       }
+      const publicUrl = `${r2.publicBaseUrl}/${safeKey}`;
 
       // Save metadata to media_assets in Supabase
-      try {
-        await supabase.from("media_assets").insert({
+      {
+        const { error: dbError } = await supabase.from("media_assets").insert({
           object_key: safeKey,
           public_url: publicUrl,
           file_name: file.name,
@@ -111,8 +81,7 @@ export async function POST(request: Request) {
           size_bytes: file.size,
           created_by: user.id,
         });
-      } catch (dbError) {
-        console.warn("Failed saving media metadata to DB:", dbError);
+        if (dbError) console.warn("Failed saving media metadata to DB:", dbError.message);
       }
 
       return NextResponse.json({
@@ -129,14 +98,9 @@ export async function POST(request: Request) {
   }
 
   // 2. Legacy JSON Presigned URL Request (if needed)
-  const accountId = process.env.R2_ACCOUNT_ID;
-  const accessKeyId = process.env.R2_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
-  const bucket = process.env.R2_BUCKET_NAME;
-  const publicBaseUrl = process.env.R2_PUBLIC_BASE_URL?.replace(/\/$/, "");
-
-  if (!accountId || !accessKeyId || !secretAccessKey || !bucket || !publicBaseUrl) {
-    return NextResponse.json({ error: "Pengaturan Cloudflare R2 belum lengkap." }, { status: 503 });
+  const { config: r2, missing } = getR2Config();
+  if (!r2) {
+    return NextResponse.json({ error: `Pengaturan Cloudflare R2 belum lengkap/valid: ${missing.join(", ")}.` }, { status: 503 });
   }
 
   const body = (await request.json().catch(() => null)) as { fileName?: string; contentType?: string; size?: number } | null;
@@ -151,14 +115,9 @@ export async function POST(request: Request) {
   const cleanName = (body.fileName || "gambar").normalize("NFKD").replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 70) || "gambar";
   const key = `mbs/${new Date().toISOString().slice(0, 10)}/${randomUUID()}-${cleanName.replace(/\.[^.]+$/, "")}.${ext}`;
   try {
-    const client = new S3Client({
-      region: "auto",
-      endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-      credentials: { accessKeyId, secretAccessKey },
-    });
-    const command = new PutObjectCommand({ Bucket: bucket, Key: key, ContentType: body.contentType, ContentLength: body.size });
-    const uploadUrl = await getSignedUrl(client, command, { expiresIn: 300 });
-    return NextResponse.json({ uploadUrl, key, publicUrl: `${publicBaseUrl}/${key}`, expiresIn: 300 });
+    const command = new PutObjectCommand({ Bucket: r2.bucket, Key: key, ContentType: body.contentType, ContentLength: body.size });
+    const uploadUrl = await getSignedUrl(r2.client, command, { expiresIn: 300 });
+    return NextResponse.json({ uploadUrl, key, publicUrl: `${r2.publicBaseUrl}/${key}`, expiresIn: 300 });
   } catch {
     return NextResponse.json({ error: "Cloudflare R2 belum dapat menyiapkan upload. Periksa akun dan izin token." }, { status: 502 });
   }
