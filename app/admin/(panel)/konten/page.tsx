@@ -366,18 +366,29 @@ export default function AdminHomepageContent() {
                           <input
                             type="text"
                             className="admin-input-field"
-                            placeholder="Alamat URL tujuan (misal: https://... atau /berita)"
+                            placeholder="Alamat URL tujuan (misal: /donasi atau https://...)"
                             value={slide.linkUrl}
                             onChange={(e) => updateSlide(idx, { linkUrl: e.target.value })}
                           />
-                          <label className="admin-checkbox-sub">
-                            <input
-                              type="checkbox"
-                              checked={slide.openInNewTab}
-                              onChange={(e) => updateSlide(idx, { openInNewTab: e.target.checked })}
-                            />
-                            <span>Buka di tab baru</span>
-                          </label>
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px", marginTop: "4px" }}>
+                            <button
+                              type="button"
+                              className="admin-btn-outline"
+                              style={{ fontSize: "11.5px", padding: "4px 10px", minHeight: "28px" }}
+                              onClick={() => updateSlide(idx, { hasLink: true, linkUrl: "/donasi" })}
+                              title="Isi otomatis dengan link halaman donasi"
+                            >
+                              ⚡ Isi Link Donasi (/donasi)
+                            </button>
+                            <label className="admin-checkbox-sub">
+                              <input
+                                type="checkbox"
+                                checked={slide.openInNewTab}
+                                onChange={(e) => updateSlide(idx, { openInNewTab: e.target.checked })}
+                              />
+                              <span>Buka di tab baru</span>
+                            </label>
+                          </div>
                         </div>
                       )}
                     </div>

@@ -121,11 +121,17 @@ export default function AdminNewsPage() {
             <article className="admin-panel-card admin-collection-row" key={item.id} style={{ display: "grid", gridTemplateColumns: "80px minmax(0, 1fr) auto", gap: "16px", alignItems: "center" }}>
               <div style={{ position: "relative", width: 80, height: 56, borderRadius: 5, overflow: "hidden", backgroundColor: "#eef2ec" }}>
                 <Image
-                  src={safeImageUrl(item.image_url)}
+                  src={safeImageUrl(item.image_url, "/images/card.jpeg")}
                   alt=""
                   fill
+                  unoptimized
                   sizes="80px"
                   style={{ objectFit: "cover" }}
+                  onError={(e) => {
+                    const target = e.currentTarget as HTMLImageElement;
+                    target.srcset = "";
+                    target.src = "/images/card.jpeg";
+                  }}
                 />
               </div>
 

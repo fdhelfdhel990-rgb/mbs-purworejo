@@ -75,8 +75,14 @@ export default function AdminAchievementsPage() {
                   src={safeImageUrl(item.image_url, "/images/prestasi1.jpg")}
                   alt=""
                   fill
+                  unoptimized
                   sizes="70px"
                   style={{ objectFit: "cover" }}
+                  onError={(e) => {
+                    const target = e.currentTarget as HTMLImageElement;
+                    target.srcset = "";
+                    target.src = "/images/prestasi1.jpg";
+                  }}
                 />
               </div>
 

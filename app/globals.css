@@ -51,17 +51,17 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 .hero {
   position: relative;
-  width: min(1320px, calc(100% - 48px));
-  margin: 24px auto 0;
+  width: 100%;
+  margin: 0;
   aspect-ratio: 1400 / 500;
-  min-height: 280px;
-  max-height: 500px;
+  min-height: 380px;
+  max-height: 640px;
   height: auto;
   display: flex;
   align-items: center;
   overflow: hidden;
-  border-radius: 16px;
-  box-shadow: 0 6px 24px -4px rgba(10, 30, 18, 0.12);
+  border-radius: 0;
+  box-shadow: none;
   isolation: isolate;
   color: #fff;
   background: var(--green-950);
@@ -88,11 +88,11 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 @media (max-width: 640px) {
   .hero {
-    width: calc(100% - 24px);
-    margin: 12px auto 0;
-    border-radius: 12px;
+    width: 100%;
+    margin: 0;
+    border-radius: 0;
     aspect-ratio: 16 / 9;
-    min-height: 200px;
+    min-height: 220px;
   }
   .hero-carousel-arrow { width: 34px; height: 34px; opacity: 0.85; }
   .hero-carousel-arrow.prev { left: 8px; }
@@ -857,13 +857,14 @@ button, a { -webkit-tap-highlight-color: transparent; }
 /* Homepage proportions tuned to the supplied reference */
 .content-width { width: min(1320px, calc(100% - 64px)); }
 .hero {
-  width: min(1320px, calc(100% - 48px));
-  margin: 24px auto 0;
+  width: 100%;
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
   aspect-ratio: 1400 / 500;
-  min-height: 280px;
-  max-height: 500px;
+  min-height: 380px;
+  max-height: 640px;
   height: auto;
-  border-radius: 16px;
 }
 .hero-backdrop { background-image: linear-gradient(90deg, rgba(8,25,19,.22) 0%, rgba(13,35,26,.08) 50%, rgba(8,29,21,0) 100%), linear-gradient(0deg, rgba(9,34,26,.1) 0%, transparent 40%), url("/images/card.jpeg"); background-position: center center; }
 .hero-content { width: 100%; padding: clamp(24px, 4vw, 48px); }

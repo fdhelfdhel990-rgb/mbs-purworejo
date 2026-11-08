@@ -10,6 +10,14 @@ import {
 } from "../../../data/public-cms";
 import ImageUploadDropzone from "../../components/image-upload-dropzone";
 
+function formatRp(num: number): string {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(num);
+}
+
 export default function AdminDonasiPage() {
   const [data, setData] = useState<DonationSettings>(defaultDonationSettings);
   const [savedSnapshot, setSavedSnapshot] = useState<DonationSettings>(defaultDonationSettings);
@@ -18,6 +26,20 @@ export default function AdminDonasiPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [quickAmountsStr, setQuickAmountsStr] = useState("25000, 50000, 100000, 250000, 500000, 1000000");
+
+  // State to control which card is expanded / collapsed
+  const [openCards, setOpenCards] = useState<Record<string, boolean>>({
+    program: true,
+    payment: false,
+    contact: false,
+  });
+
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedRelLink, setCopiedRelLink] = useState(false);
+
+  const toggleCard = (key: string) => {
+    setOpenCards((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
 
   useEffect(() => {
     let active = true;
@@ -90,6 +112,15 @@ export default function AdminDonasiPage() {
     });
   };
 
+  const handleCancel = () => {
+    setData(savedSnapshot);
+    if (Array.isArray(savedSnapshot.quickAmounts)) {
+      setQuickAmountsStr(savedSnapshot.quickAmounts.join(", "));
+    }
+    setMessage("Perubahan dibatalkan.");
+    setTimeout(() => setMessage(""), 3000);
+  };
+
   const save = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSaving(true);
@@ -127,7 +158,8 @@ export default function AdminDonasiPage() {
 
       await fetch("/api/admin/revalidate", { method: "POST" });
       setSavedSnapshot(payload);
-      setMessage("✓ Pengaturan halaman donasi dan metode pembayaran berhasil disimpan!");
+      setMessage("✓ Pengaturan donasi berhasil disimpan!");
+      setTimeout(() => setMessage(""), 4000);
     } catch (err) {
       setError(err instanceof Error ? `Gagal menyimpan: ${err.message}` : "Gagal menyimpan pengaturan.");
     } finally {
@@ -144,6 +176,19 @@ export default function AdminDonasiPage() {
   }
 
   const isDirty = JSON.stringify(data) !== JSON.stringify(savedSnapshot);
+  const fullDonationUrl = typeof window !== "undefined" ? `${window.location.origin}/donasi` : "https://mbs-purworejo.sch.id/donasi";
+
+  const handleCopyFull = () => {
+    void navigator.clipboard.writeText(fullDonationUrl);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2500);
+  };
+
+  const handleCopyRel = () => {
+    void navigator.clipboard.writeText("/donasi");
+    setCopiedRelLink(true);
+    setTimeout(() => setCopiedRelLink(false), 2500);
+  };
 
   return (
     <>
@@ -152,322 +197,457 @@ export default function AdminDonasiPage() {
           <span className="admin-eyebrow">PENGATURAN & LAYANAN</span>
           <h1>Program Donasi</h1>
           <p>
-            Kelola program donasi, poster, metode pembayaran QRIS, nomor rekening transfer bank, dan kontak bendahara.
+            Kelola rincian program donasi, poster, metode pembayaran QRIS, nomor rekening transfer bank, dan kontak bendahara.
           </p>
         </div>
-        <Link className="admin-btn-outline" href="/donasi" target="_blank">
-          Lihat Halaman Donasi ↗
-        </Link>
+        <div className="admin-page-actions">
+          <Link className="admin-btn-outline" href="/donasi" target="_blank">
+            Lihat Halaman Donasi ↗
+          </Link>
+        </div>
       </div>
 
+      {message && <div className="admin-alert is-success">{message}</div>}
+      {error && <div className="admin-alert is-error">{error}</div>}
+
+      {/* GENERATE LINK OTOMATIS UNTUK BANNER */}
+      <section className="admin-link-card">
+        <div className="admin-link-card-body">
+          <strong>🔗 Tautan Otomatis Halaman Donasi</strong>
+          <p>
+            Salin link ini untuk ditempelkan pada kolom <strong>Tautan Banner</strong> di menu <strong>Konten Beranda</strong>. Ketika pengunjung menekan banner tersebut di beranda, mereka langsung diarahkan ke halaman donasi.
+          </p>
+          <div className="admin-link-pill-row">
+            <span className="admin-link-code">{fullDonationUrl}</span>
+            <button
+              type="button"
+              className={`admin-btn-copy-link ${copiedLink ? "is-copied" : ""}`}
+              onClick={handleCopyFull}
+              title="Salin tautan lengkap"
+            >
+              {copiedLink ? "✓ Link Tersalin!" : "📋 Salin Link Lengkap"}
+            </button>
+            <button
+              type="button"
+              className={`admin-btn-outline ${copiedRelLink ? "is-copied" : ""}`}
+              style={{ fontSize: "12px", minHeight: "36px", padding: "0 12px" }}
+              onClick={handleCopyRel}
+              title="Salin path /donasi"
+            >
+              {copiedRelLink ? "✓ Tersalin /donasi" : "Salin /donasi"}
+            </button>
+          </div>
+        </div>
+        <Link href="/admin/konten" className="admin-btn-shortcut">
+          Buka Pengaturan Banner di Konten Beranda →
+        </Link>
+      </section>
+
       <form onSubmit={save}>
-        {message && <div className="admin-alert is-success">{message}</div>}
-        {error && <div className="admin-alert is-error">{error}</div>}
-
-        {/* STATUS PROGRAM */}
-        <section className="admin-card-section">
-          <div className="admin-card-section-header">
-            <h2>Status Program Donasi</h2>
-            <p>Aktifkan atau nonaktifkan penerimaan donasi publik di website.</p>
-          </div>
-          <div className="admin-input-group">
-            <label className="admin-checkbox-label" style={{ fontSize: "15px", fontWeight: 600 }}>
-              <input
-                type="checkbox"
-                checked={data.enabled}
-                onChange={(e) => setData((curr) => ({ ...curr, enabled: e.target.checked }))}
-              />
-              <span>Aktifkan Halaman Donasi Publik (/donasi)</span>
-            </label>
-          </div>
-        </section>
-
-        {/* KATEGORI 1: INFORMASI PROGRAM DONASI */}
-        <section className="admin-card-section">
-          <div className="admin-card-section-header">
-            <h2>1. Informasi Program Donasi</h2>
-            <p>Judul program, kategori, poster kampanye, serta target dana yang dihimpun.</p>
-          </div>
-
-          <div className="admin-field-row">
-            <div className="admin-field-group">
-              <label className="admin-field-label">Judul Program Donasi</label>
-              <input
-                type="text"
-                className="admin-input-field"
-                value={data.campaignTitle}
-                onChange={(e) => setData((curr) => ({ ...curr, campaignTitle: e.target.value }))}
-                placeholder="Contoh: Donasi Pengembangan Fasilitas Santri"
-                required
-              />
+        {/* CARD 1: INFORMASI PROGRAM DONASI */}
+        <div className={`admin-accordion-card ${openCards.program ? "is-open" : ""}`}>
+          <div
+            className="admin-accordion-header"
+            onClick={() => toggleCard("program")}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") toggleCard("program"); }}
+          >
+            <div className="admin-accordion-header-left">
+              <span className="admin-accordion-icon">📋</span>
+              <div className="admin-accordion-title-wrap">
+                <strong>1. Informasi Program Donasi</strong>
+                <small>{data.campaignTitle || "Belum ada judul program"}</small>
+              </div>
             </div>
-            <div className="admin-field-group">
-              <label className="admin-field-label">Kategori Program</label>
-              <input
-                type="text"
-                className="admin-input-field"
-                value={data.campaignCategory}
-                onChange={(e) => setData((curr) => ({ ...curr, campaignCategory: e.target.value }))}
-                placeholder="Contoh: Infaq & Sedekah Pendidikan"
-              />
+            <div className="admin-accordion-header-right">
+              <span className="admin-accordion-summary-tag">
+                Target: {formatRp(data.targetAmount)}
+              </span>
+              <span className="admin-accordion-summary-tag">
+                Terkumpul: {formatRp(data.collectedAmount)}
+              </span>
+              <span className="admin-accordion-toggle-btn">
+                {openCards.program ? "Tutup Detail ▲" : "Lihat & Edit Detail ▼"}
+              </span>
             </div>
           </div>
 
-          <div className="admin-input-group">
-            <label className="admin-field-label">Subjudul / Slogan Singkat</label>
-            <input
-              type="text"
-              className="admin-input-field"
-              value={data.campaignSubtitle}
-              onChange={(e) => setData((curr) => ({ ...curr, campaignSubtitle: e.target.value }))}
-              placeholder="Ajakan singkat kepada donatur..."
-            />
-          </div>
+          {openCards.program && (
+            <div className="admin-accordion-body">
+              <div className="admin-input-group" style={{ marginBottom: "18px" }}>
+                <label className="admin-checkbox-label" style={{ fontSize: "14px", fontWeight: 700 }}>
+                  <input
+                    type="checkbox"
+                    checked={data.enabled}
+                    onChange={(e) => setData((curr) => ({ ...curr, enabled: e.target.checked }))}
+                  />
+                  <span>Aktifkan status publikasi halaman donasi ini</span>
+                </label>
+              </div>
 
-          <div className="admin-input-group">
-            <label className="admin-field-label">Deskripsi Lengkap Program</label>
-            <textarea
-              className="admin-input-field"
-              rows={4}
-              value={data.campaignDescription}
-              onChange={(e) => setData((curr) => ({ ...curr, campaignDescription: e.target.value }))}
-              placeholder="Jelaskan tujuan donasi, pemanfaatan dana, dan kebaikan yang akan dirasakan santri..."
-            />
-          </div>
+              <div className="admin-form-grid-2">
+                <div className="admin-input-group">
+                  <label className="admin-label-text">Judul Program Donasi *</label>
+                  <input
+                    type="text"
+                    className="admin-input-field"
+                    value={data.campaignTitle}
+                    onChange={(e) => setData((curr) => ({ ...curr, campaignTitle: e.target.value }))}
+                    placeholder="Contoh: Donasi Pengembangan Fasilitas Santri"
+                    required
+                  />
+                </div>
+                <div className="admin-input-group">
+                  <label className="admin-label-text">Kategori Program</label>
+                  <input
+                    type="text"
+                    className="admin-input-field"
+                    value={data.campaignCategory}
+                    onChange={(e) => setData((curr) => ({ ...curr, campaignCategory: e.target.value }))}
+                    placeholder="Contoh: Infaq & Sedekah Pendidikan"
+                  />
+                </div>
+              </div>
 
-          <div className="admin-field-row">
-            <div className="admin-field-group">
-              <label className="admin-field-label">Target Dana (Rp)</label>
-              <input
-                type="number"
-                className="admin-input-field"
-                value={data.targetAmount}
-                onChange={(e) => setData((curr) => ({ ...curr, targetAmount: Number(e.target.value) || 0 }))}
-                placeholder="250000000"
-              />
-            </div>
-            <div className="admin-field-group">
-              <label className="admin-field-label">Dana Terkumpul Saat Ini (Rp)</label>
-              <input
-                type="number"
-                className="admin-input-field"
-                value={data.collectedAmount}
-                onChange={(e) => setData((curr) => ({ ...curr, collectedAmount: Number(e.target.value) || 0 }))}
-                placeholder="85400000"
-              />
-            </div>
-            <div className="admin-field-group">
-              <label className="admin-field-label">Jumlah Donatur Terdata</label>
-              <input
-                type="number"
-                className="admin-input-field"
-                value={data.donorCount}
-                onChange={(e) => setData((curr) => ({ ...curr, donorCount: Number(e.target.value) || 0 }))}
-                placeholder="146"
-              />
-            </div>
-          </div>
-
-          <div className="admin-input-group">
-            <ImageUploadDropzone
-              value={data.campaignImage}
-              label="Foto / Poster Program Donasi"
-              placeholderTitle="Unggah Poster Program Donasi"
-              onChange={(url) => setData((curr) => ({ ...curr, campaignImage: url }))}
-            />
-          </div>
-
-          <div className="admin-input-group">
-            <label className="admin-field-label">Pilihan Nominal Cepat (Pisahkan dengan koma)</label>
-            <input
-              type="text"
-              className="admin-input-field"
-              value={quickAmountsStr}
-              onChange={(e) => setQuickAmountsStr(e.target.value)}
-              placeholder="25000, 50000, 100000, 250000, 500000, 1000000"
-            />
-            <small style={{ color: "#667085", display: "block", marginTop: "4px" }}>
-              Tombol nominal instan yang dapat langsung dipilih oleh donatur pada formulir.
-            </small>
-          </div>
-        </section>
-
-        {/* KATEGORI 2: METODE PEMBAYARAN QRIS */}
-        <section className="admin-card-section">
-          <div className="admin-card-section-header">
-            <h2>2. Metode Pembayaran QRIS</h2>
-            <p>
-              Terima donasi melalui scan QRIS (GoPay, OVO, Dana, ShopeePay, BCA, Livin Mandiri, BSI Mobile, dan semua aplikasi QRIS).
-            </p>
-          </div>
-
-          <div className="admin-input-group">
-            <label className="admin-checkbox-label">
-              <input
-                type="checkbox"
-                checked={data.qrisEnabled}
-                onChange={(e) => setData((curr) => ({ ...curr, qrisEnabled: e.target.checked }))}
-              />
-              <strong>Aktifkan Pembayaran via QRIS</strong>
-            </label>
-          </div>
-
-          {data.qrisEnabled && (
-            <>
-              <div className="admin-input-group">
-                <label className="admin-field-label">Nama Merchant QRIS (NMID / Akun)</label>
+              <div className="admin-input-group" style={{ marginTop: "14px" }}>
+                <label className="admin-label-text">Subjudul / Slogan Singkat</label>
                 <input
                   type="text"
                   className="admin-input-field"
-                  value={data.qrisMerchantName}
-                  onChange={(e) => setData((curr) => ({ ...curr, qrisMerchantName: e.target.value }))}
-                  placeholder="Contoh: MBS PURWOREJO / LAZISMU"
+                  value={data.campaignSubtitle}
+                  onChange={(e) => setData((curr) => ({ ...curr, campaignSubtitle: e.target.value }))}
+                  placeholder="Contoh: Salurkan infaq terbaik Anda untuk mencetak generasi penghafal Al-Qur'an..."
                 />
               </div>
 
-              <div className="admin-input-group">
+              <div className="admin-input-group" style={{ marginTop: "14px" }}>
+                <label className="admin-label-text">Deskripsi Lengkap Program</label>
+                <textarea
+                  className="admin-textarea-field"
+                  rows={4}
+                  value={data.campaignDescription}
+                  onChange={(e) => setData((curr) => ({ ...curr, campaignDescription: e.target.value }))}
+                  placeholder="Jelaskan tujuan donasi, rencana pemanfaatan dana, dan kebaikan yang akan dirasakan santri..."
+                />
+              </div>
+
+              <div className="admin-form-grid-2" style={{ marginTop: "14px" }}>
+                <div className="admin-input-group">
+                  <label className="admin-label-text">Target Dana (Rp)</label>
+                  <input
+                    type="number"
+                    className="admin-input-field"
+                    value={data.targetAmount}
+                    onChange={(e) => setData((curr) => ({ ...curr, targetAmount: Number(e.target.value) || 0 }))}
+                    placeholder="250000000"
+                  />
+                </div>
+                <div className="admin-input-group">
+                  <label className="admin-label-text">Dana Terkumpul Saat Ini (Rp)</label>
+                  <input
+                    type="number"
+                    className="admin-input-field"
+                    value={data.collectedAmount}
+                    onChange={(e) => setData((curr) => ({ ...curr, collectedAmount: Number(e.target.value) || 0 }))}
+                    placeholder="85400000"
+                  />
+                </div>
+              </div>
+
+              <div className="admin-form-grid-2" style={{ marginTop: "14px" }}>
+                <div className="admin-input-group">
+                  <label className="admin-label-text">Jumlah Donatur Terdata</label>
+                  <input
+                    type="number"
+                    className="admin-input-field"
+                    value={data.donorCount}
+                    onChange={(e) => setData((curr) => ({ ...curr, donorCount: Number(e.target.value) || 0 }))}
+                    placeholder="146"
+                  />
+                </div>
+                <div className="admin-input-group">
+                  <label className="admin-label-text">Pilihan Nominal Cepat (Pisahkan koma)</label>
+                  <input
+                    type="text"
+                    className="admin-input-field"
+                    value={quickAmountsStr}
+                    onChange={(e) => setQuickAmountsStr(e.target.value)}
+                    placeholder="25000, 50000, 100000, 250000, 500000, 1000000"
+                  />
+                </div>
+              </div>
+
+              <div className="admin-input-group" style={{ marginTop: "16px" }}>
                 <ImageUploadDropzone
-                  value={data.qrisImage}
-                  label="Gambar Kode QRIS Resmi"
-                  placeholderTitle="Unggah Gambar QR Code QRIS"
-                  onChange={(url) => setData((curr) => ({ ...curr, qrisImage: url }))}
+                  value={data.campaignImage}
+                  label="Poster / Gambar Program Donasi"
+                  placeholderTitle="Unggah Poster Program Donasi (Ukuran rekomendasi 800 × 500 px)"
+                  onChange={(url) => setData((curr) => ({ ...curr, campaignImage: url }))}
                 />
-                <small style={{ color: "#667085", display: "block", marginTop: "6px" }}>
-                  💡 Gambar QRIS ini akan tampil otomatis pada nota keterangan pembayaran donatur dan dapat diunduh langsung.
-                </small>
               </div>
-            </>
+
+              <div className="admin-card-save-row">
+                <button type="submit" className="admin-btn-save" disabled={saving}>
+                  {saving ? "Menyimpan…" : "Simpan Informasi Program"}
+                </button>
+              </div>
+            </div>
           )}
-        </section>
+        </div>
 
-        {/* KATEGORI 3: METODE PEMBAYARAN TRANSFER BANK */}
-        <section className="admin-card-section">
-          <div className="admin-card-section-header">
-            <h2>3. Metode Pembayaran Transfer Bank</h2>
-            <p>Daftar nomor rekening bank resmi yayasan/pesantren untuk transfer manual atau mobile banking.</p>
+        {/* CARD 2: METODE PEMBAYARAN (QRIS & TRANSFER BANK) */}
+        <div className={`admin-accordion-card ${openCards.payment ? "is-open" : ""}`}>
+          <div
+            className="admin-accordion-header"
+            onClick={() => toggleCard("payment")}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") toggleCard("payment"); }}
+          >
+            <div className="admin-accordion-header-left">
+              <span className="admin-accordion-icon">💳</span>
+              <div className="admin-accordion-title-wrap">
+                <strong>2. Metode Pembayaran (QRIS & Transfer Bank)</strong>
+                <small>Hanya metode yang diisi dan diaktifkan di sini yang akan muncul bagi donatur</small>
+              </div>
+            </div>
+            <div className="admin-accordion-header-right">
+              <span className="admin-accordion-summary-tag">
+                {data.qrisEnabled ? "QRIS Aktif" : "QRIS Nonaktif"}
+              </span>
+              <span className="admin-accordion-summary-tag">
+                {data.bankAccounts.length} Rekening Bank
+              </span>
+              <span className="admin-accordion-toggle-btn">
+                {openCards.payment ? "Tutup Detail ▲" : "Lihat & Edit Detail ▼"}
+              </span>
+            </div>
           </div>
 
-          <div className="admin-slides-stack">
-            {data.bankAccounts.map((bank, index) => (
-              <div key={bank.id || index} className="admin-slide-card">
-                <div className="admin-slide-card-header">
-                  <div className="admin-slide-header-left">
-                    <span className="admin-slide-badge-num">{index + 1}</span>
-                    <strong>{bank.bankName || `Rekening ${index + 1}`}</strong>
-                  </div>
-                  {data.bankAccounts.length > 1 && (
-                    <button
-                      type="button"
-                      className="admin-slide-btn-del"
-                      onClick={() => handleRemoveBank(index)}
-                      title="Hapus rekening ini"
-                    >
-                      Hapus
-                    </button>
-                  )}
+          {openCards.payment && (
+            <div className="admin-accordion-body">
+              {/* SUB-SEKSI QRIS */}
+              <div style={{ background: "#f8fbf8", border: "1px solid #dce8db", borderRadius: "10px", padding: "18px 20px", marginBottom: "20px" }}>
+                <div style={{ marginBottom: "14px" }}>
+                  <label className="admin-checkbox-label" style={{ fontSize: "14px", fontWeight: 700 }}>
+                    <input
+                      type="checkbox"
+                      checked={data.qrisEnabled}
+                      onChange={(e) => setData((curr) => ({ ...curr, qrisEnabled: e.target.checked }))}
+                    />
+                    <span>Aktifkan Pembayaran QRIS (GoPay, OVO, Dana, ShopeePay, m-Banking)</span>
+                  </label>
                 </div>
 
-                <div className="admin-field-row" style={{ marginTop: "12px" }}>
-                  <div className="admin-field-group">
-                    <label className="admin-field-label">Nama Bank</label>
-                    <input
-                      type="text"
-                      className="admin-input-field"
-                      value={bank.bankName}
-                      onChange={(e) => handleBankChange(index, "bankName", e.target.value)}
-                      placeholder="Contoh: Bank Syariah Indonesia (BSI)"
-                      required
-                    />
+                {data.qrisEnabled && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "14px", marginTop: "12px" }}>
+                    <div className="admin-input-group">
+                      <label className="admin-label-text">Nama Merchant QRIS (NMID / Atas Nama Toko)</label>
+                      <input
+                        type="text"
+                        className="admin-input-field"
+                        value={data.qrisMerchantName}
+                        onChange={(e) => setData((curr) => ({ ...curr, qrisMerchantName: e.target.value }))}
+                        placeholder="Contoh: MBS PURWOREJO / LAZISMU"
+                      />
+                    </div>
+
+                    <div className="admin-input-group">
+                      <ImageUploadDropzone
+                        value={data.qrisImage}
+                        label="Gambar Kode QRIS Resmi"
+                        placeholderTitle="Unggah Gambar QR Code QRIS"
+                        onChange={(url) => setData((curr) => ({ ...curr, qrisImage: url }))}
+                      />
+                      <small style={{ color: "#667085", marginTop: "4px" }}>
+                        💡 Gambar QRIS ini akan tampil otomatis di nota pembayaran donatur dan bisa diunduh.
+                      </small>
+                    </div>
                   </div>
-                  <div className="admin-field-group">
-                    <label className="admin-field-label">Nomor Rekening</label>
-                    <input
-                      type="text"
-                      className="admin-input-field"
-                      value={bank.accountNumber}
-                      onChange={(e) => handleBankChange(index, "accountNumber", e.target.value)}
-                      placeholder="Contoh: 7188822331"
-                      required
-                    />
+                )}
+              </div>
+
+              {/* SUB-SEKSI REKENING BANK */}
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+                  <div>
+                    <strong style={{ fontSize: "14px", color: "var(--green-950)" }}>Daftar Rekening Bank Resmi</strong>
+                    <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#667085" }}>
+                      Nomor rekening untuk tujuan transfer manual donatur.
+                    </p>
                   </div>
-                  <div className="admin-field-group">
-                    <label className="admin-field-label">Atas Nama (A/N)</label>
-                    <input
-                      type="text"
-                      className="admin-input-field"
-                      value={bank.accountHolder}
-                      onChange={(e) => handleBankChange(index, "accountHolder", e.target.value)}
-                      placeholder="Contoh: Ponpes Modern MBS Purworejo"
-                      required
-                    />
-                  </div>
+                  <button
+                    type="button"
+                    className="admin-btn-outline"
+                    style={{ fontSize: "12px", padding: "6px 14px", height: "auto" }}
+                    onClick={handleAddBank}
+                  >
+                    + Tambah Rekening
+                  </button>
+                </div>
+
+                <div className="admin-slides-stack">
+                  {data.bankAccounts.map((bank, index) => (
+                    <div key={bank.id || index} className="admin-slide-card">
+                      <div className="admin-slide-card-header">
+                        <div className="admin-slide-header-left">
+                          <span className="admin-slide-badge-num">{index + 1}</span>
+                          <strong>{bank.bankName || `Rekening Bank ${index + 1}`}</strong>
+                        </div>
+                        {data.bankAccounts.length > 1 && (
+                          <button
+                            type="button"
+                            className="admin-slide-btn-del"
+                            onClick={() => handleRemoveBank(index)}
+                            title="Hapus rekening ini"
+                          >
+                            Hapus
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="admin-form-grid-2" style={{ marginTop: "10px" }}>
+                        <div className="admin-input-group">
+                          <label className="admin-label-text">Nama Bank *</label>
+                          <input
+                            type="text"
+                            className="admin-input-field"
+                            value={bank.bankName}
+                            onChange={(e) => handleBankChange(index, "bankName", e.target.value)}
+                            placeholder="Contoh: Bank Syariah Indonesia (BSI)"
+                            required
+                          />
+                        </div>
+                        <div className="admin-input-group">
+                          <label className="admin-label-text">Nomor Rekening *</label>
+                          <input
+                            type="text"
+                            className="admin-input-field"
+                            value={bank.accountNumber}
+                            onChange={(e) => handleBankChange(index, "accountNumber", e.target.value)}
+                            placeholder="Contoh: 7188822331"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="admin-input-group" style={{ marginTop: "8px" }}>
+                        <label className="admin-label-text">Atas Nama (A/N)</label>
+                        <input
+                          type="text"
+                          className="admin-input-field"
+                          value={bank.accountHolder}
+                          onChange={(e) => handleBankChange(index, "accountHolder", e.target.value)}
+                          placeholder="Contoh: Pondok Pesantren Modern MBS Purworejo"
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
+
+              <div className="admin-card-save-row">
+                <button type="submit" className="admin-btn-save" disabled={saving}>
+                  {saving ? "Menyimpan…" : "Simpan Metode Pembayaran"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* CARD 3: KONTAK KONFIRMASI BENDAHARA & AKAD */}
+        <div className={`admin-accordion-card ${openCards.contact ? "is-open" : ""}`}>
+          <div
+            className="admin-accordion-header"
+            onClick={() => toggleCard("contact")}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") toggleCard("contact"); }}
+          >
+            <div className="admin-accordion-header-left">
+              <span className="admin-accordion-icon">📱</span>
+              <div className="admin-accordion-title-wrap">
+                <strong>3. Narahubung WhatsApp Bendahara & Teks Akad</strong>
+                <small>Nomor tujuan konfirmasi nota donasi melalui chat WhatsApp</small>
+              </div>
+            </div>
+            <div className="admin-accordion-header-right">
+              <span className="admin-accordion-summary-tag">
+                WA: {data.confirmationPhone || "-"}
+              </span>
+              <span className="admin-accordion-toggle-btn">
+                {openCards.contact ? "Tutup Detail ▲" : "Lihat & Edit Detail ▼"}
+              </span>
+            </div>
           </div>
 
+          {openCards.contact && (
+            <div className="admin-accordion-body">
+              <div className="admin-form-grid-2">
+                <div className="admin-input-group">
+                  <label className="admin-label-text">Nomor WhatsApp Bendahara *</label>
+                  <input
+                    type="tel"
+                    className="admin-input-field"
+                    value={data.confirmationPhone}
+                    onChange={(e) => setData((curr) => ({ ...curr, confirmationPhone: e.target.value }))}
+                    placeholder="Contoh: 081234567890"
+                    required
+                  />
+                  <small style={{ color: "#667085", marginTop: "4px" }}>
+                    Donatur akan otomatis diarahkan ke chat nomor WhatsApp ini saat mengklik &quot;Konfirmasi via WhatsApp&quot;.
+                  </small>
+                </div>
+                <div className="admin-input-group">
+                  <label className="admin-label-text">Nama Kontak Bendahara</label>
+                  <input
+                    type="text"
+                    className="admin-input-field"
+                    value={data.confirmationName}
+                    onChange={(e) => setData((curr) => ({ ...curr, confirmationName: e.target.value }))}
+                    placeholder="Contoh: Bendahara MBS Purworejo"
+                  />
+                </div>
+              </div>
+
+              <div className="admin-input-group" style={{ marginTop: "14px" }}>
+                <label className="admin-label-text">Pernyataan Akad Donatur (Disclaimer)</label>
+                <textarea
+                  className="admin-textarea-field"
+                  rows={3}
+                  value={data.disclaimerText}
+                  onChange={(e) => setData((curr) => ({ ...curr, disclaimerText: e.target.value }))}
+                  placeholder="Dengan mengisi formulir ini, saya menyatakan bahwa donasi yang ditunaikan bersumber dari harta halal..."
+                />
+              </div>
+
+              <div className="admin-card-save-row">
+                <button type="submit" className="admin-btn-save" disabled={saving}>
+                  {saving ? "Menyimpan…" : "Simpan Kontak & Akad"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* STICKY BOTTOM ACTIONS */}
+        <div className="admin-bottom-actions">
+          {isDirty && (
+            <span style={{ fontSize: "12px", color: "#b45309", fontWeight: 600, marginRight: "auto" }}>
+              ● Ada perubahan yang belum disimpan
+            </span>
+          )}
           <button
             type="button"
-            className="admin-btn-outline"
-            style={{ marginTop: "14px" }}
-            onClick={handleAddBank}
+            className="admin-btn-cancel"
+            onClick={handleCancel}
+            disabled={saving || !isDirty}
           >
-            + Tambah Rekening Bank Lain
+            Batal
           </button>
-        </section>
-
-        {/* KATEGORI 4: KONTAK KONFIRMASI BENDAHARA */}
-        <section className="admin-card-section">
-          <div className="admin-card-section-header">
-            <h2>4. Kontak Konfirmasi & Bendahara</h2>
-            <p>Kontak WhatsApp yang akan dihubungi donatur untuk mengirimkan konfirmasi bukti transfer atau bertanya.</p>
-          </div>
-
-          <div className="admin-field-row">
-            <div className="admin-field-group">
-              <label className="admin-field-label">Nomor WhatsApp Bendahara (Diawali 62 atau 08)</label>
-              <input
-                type="text"
-                className="admin-input-field"
-                value={data.confirmationPhone}
-                onChange={(e) => setData((curr) => ({ ...curr, confirmationPhone: e.target.value }))}
-                placeholder="Contoh: 6281234567890"
-              />
-            </div>
-            <div className="admin-field-group">
-              <label className="admin-field-label">Nama Petugas / Bendahara</label>
-              <input
-                type="text"
-                className="admin-input-field"
-                value={data.confirmationName}
-                onChange={(e) => setData((curr) => ({ ...curr, confirmationName: e.target.value }))}
-                placeholder="Contoh: Bendahara MBS Purworejo"
-              />
-            </div>
-          </div>
-
-          <div className="admin-input-group">
-            <label className="admin-field-label">Teks Persetujuan & Akad Donatur</label>
-            <textarea
-              className="admin-input-field"
-              rows={3}
-              value={data.disclaimerText}
-              onChange={(e) => setData((curr) => ({ ...curr, disclaimerText: e.target.value }))}
-            />
-          </div>
-        </section>
-
-        {/* SAVE BAR */}
-        <div className="admin-save-bar">
-          <div className="admin-save-bar-info">
-            {isDirty ? (
-              <span className="admin-dirty-indicator">● Ada perubahan yang belum disimpan</span>
-            ) : (
-              <span>Seluruh perubahan tersimpan aman.</span>
-            )}
-          </div>
-          <button type="submit" className="admin-btn-primary" disabled={saving}>
-            {saving ? "Menyimpan…" : "Simpan Pengaturan Donasi"}
+          <button type="submit" className="admin-btn-save" disabled={saving}>
+            {saving ? "Menyimpan…" : "Simpan Semua Perubahan"}
           </button>
         </div>
       </form>
