@@ -20,8 +20,8 @@ export default async function SiteFooter() {
   const footer = await getPublicFooterContent();
 
   return (
-    <footer className="site-footer" id="kontak">
-      <div className="footer-main">
+    <footer className="site-footer" id="kontak" suppressHydrationWarning>
+      <div className="footer-main" suppressHydrationWarning>
         <div className="footer-about">
           <Link className="brand brand-footer" href="/">
             <span className="brand-mark"><Image src="/images/icon.png" alt="Logo Pondok Pesantren Modern MBS Purworejo" width={38} height={38} /></span>

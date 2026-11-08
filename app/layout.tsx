@@ -143,7 +143,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <SiteHeader />
         {children}
-        <Suspense fallback={<footer className="site-footer" id="kontak" />}>
+        <Suspense fallback={<footer className="site-footer" id="kontak" suppressHydrationWarning />}>
           <SiteFooter />
         </Suspense>
         <Suspense fallback={null}>
