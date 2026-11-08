@@ -325,6 +325,11 @@ export default function AdminHomepageContent() {
                       sizes="220px"
                       unoptimized
                       style={{ objectFit: "cover" }}
+                      onError={(e) => {
+                        const target = e.currentTarget as HTMLImageElement;
+                        target.srcset = "";
+                        target.src = "/images/card.jpeg";
+                      }}
                     />
                   </div>
 

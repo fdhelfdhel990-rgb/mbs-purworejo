@@ -93,6 +93,11 @@ export default async function AdminDashboardPage() {
                         sizes="56px"
                         unoptimized
                         style={{ objectFit: "cover" }}
+                        onError={(e) => {
+                          const target = e.currentTarget as HTMLImageElement;
+                          target.srcset = "";
+                          target.src = "/images/card.jpeg";
+                        }}
                       />
                     ) : (
                       <span className="admin-news-mark">📰</span>

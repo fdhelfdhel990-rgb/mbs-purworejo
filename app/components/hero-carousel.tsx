@@ -201,6 +201,11 @@ export default function HeroCarousel({
                 priority={index === 0}
                 sizes="100vw"
                 unoptimized
+                onError={(e) => {
+                  const target = e.currentTarget as HTMLImageElement;
+                  target.srcset = "";
+                  target.src = "/images/card.jpeg";
+                }}
               />
             </div>
           );

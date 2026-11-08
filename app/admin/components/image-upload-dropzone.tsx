@@ -62,6 +62,11 @@ export default function ImageUploadDropzone({
               sizes="240px"
               unoptimized
               style={{ objectFit: "cover" }}
+              onError={(e) => {
+                const target = e.currentTarget as HTMLImageElement;
+                target.srcset = "";
+                target.src = "/images/card.jpeg";
+              }}
             />
           </div>
           <div className="admin-upload-meta">
