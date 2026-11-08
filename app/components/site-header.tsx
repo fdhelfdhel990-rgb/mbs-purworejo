@@ -36,7 +36,7 @@ export default function SiteHeader() {
   return (
     <header className="site-header" ref={headerRef}>
       <Link className="brand" href="/" aria-label="MBS Purworejo — Beranda" onClick={closeMenu}>
-        <span className="brand-mark"><Image src="/images/icon.png" alt="" width={40} height={40} /></span>
+        <span className="brand-mark"><Image src="/images/icon.png" alt="Logo Pondok Pesantren Modern MBS Purworejo" width={40} height={40} /></span>
         <span className="brand-copy">
           <span>PONDOK PESANTREN MODERN</span>
           <strong>MBS PURWOREJO</strong>

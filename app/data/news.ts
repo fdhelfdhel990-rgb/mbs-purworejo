@@ -6,6 +6,8 @@ export type NewsArticle = {
   title: string;
   excerpt: string;
   paragraphs: string[];
+  publishedAt?: string;
+  updatedAt?: string;
 };
 
 export const newsArticles: NewsArticle[] = [

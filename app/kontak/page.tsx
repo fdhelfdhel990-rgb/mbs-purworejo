@@ -2,8 +2,36 @@ import type { Metadata } from "next";
 import ContactForm from "../components/contact-form";
 
 export const metadata: Metadata = {
-  title: "Kontak dan Kunjungan | MBS Purworejo",
-  description: "Hubungi MBS Purworejo atau jadwalkan kunjungan ke pesantren.",
+  title: "Kontak dan Kunjungan",
+  description:
+    "Hubungi Pondok Pesantren Modern MBS Purworejo di Pituruh, Kabupaten Purworejo. Informasi pendaftaran santri baru, alamat lokasi, dan jadwal kunjungan silaturahmi.",
+  alternates: {
+    canonical: "/kontak",
+  },
+  openGraph: {
+    title: "Kontak dan Kunjungan | MBS Purworejo",
+    description:
+      "Hubungi Pondok Pesantren Modern MBS Purworejo di Pituruh, Kabupaten Purworejo. Informasi pendaftaran santri baru, alamat lokasi, dan jadwal kunjungan silaturahmi.",
+    url: "https://mbs-purworejo.vercel.app/kontak",
+    siteName: "Pondok Pesantren Modern MBS Purworejo",
+    locale: "id_ID",
+    type: "website",
+    images: [
+      {
+        url: "/images/card.jpeg",
+        width: 1200,
+        height: 630,
+        alt: "Kontak MBS Purworejo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Kontak dan Kunjungan | MBS Purworejo",
+    description:
+      "Hubungi Pondok Pesantren Modern MBS Purworejo di Pituruh, Kabupaten Purworejo. Informasi pendaftaran santri baru, alamat lokasi, dan jadwal kunjungan silaturahmi.",
+    images: ["/images/card.jpeg"],
+  },
 };
 
 const address = "Jl. Srudutan No. 06, Dukuh Wetan, Pituruh, Kabupaten Purworejo, Jawa Tengah 54263";
@@ -41,7 +69,9 @@ export default function KontakPage() {
               href="https://maps.app.goo.gl/H7XxfTn3rybz36fX9"
               target="_blank"
               rel="noreferrer"
-            >Buka lokasi di Google Maps <span aria-hidden="true">↗</span></a>
+            >
+              Buka lokasi di Google Maps <span aria-hidden="true">↗</span>
+            </a>
           </section>
         </div>
       </div>

@@ -102,7 +102,16 @@ export function formatWhatsAppUrl(numberOrUrl?: string): string {
 }
 
 export type FaqItem = { id: string; question: string; answer: string };
-type CmsNewsRow = { id: string; title: string; excerpt: string; paragraphs: unknown; image_url: string; category: string; published_at: string | null };
+type CmsNewsRow = {
+  id: string;
+  title: string;
+  excerpt: string;
+  paragraphs: unknown;
+  image_url: string;
+  category: string;
+  published_at: string | null;
+  updated_at?: string | null;
+};
 const defaultFaqs: FaqItem[] = [
   { id: "faq-biaya", question: "Berapa biaya pendidikan per bulan?", answer: "Biaya pendidikan menyesuaikan jalur dan kebutuhan santri. Hubungi panitia PSB untuk memperoleh rincian biaya dan informasi terbaru." },
   { id: "faq-daftar", question: "Bagaimana cara mendaftar sebagai santri baru?", answer: "Isi formulir pendaftaran melalui tombol Daftar PSB atau hubungi panitia penerimaan santri baru kami." },
@@ -134,6 +143,8 @@ function mapNewsRows(rows: CmsNewsRow[]): NewsArticle[] {
     image: safeImageUrl(article.image_url, "/images/card.jpeg"),
     category: article.category || "Kegiatan",
     date: article.published_at ? new Date(`${article.published_at}T00:00:00`).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) : "",
+    publishedAt: article.published_at ? `${article.published_at}T00:00:00.000Z` : undefined,
+    updatedAt: article.updated_at || undefined,
     title: article.title,
     excerpt: article.excerpt,
     paragraphs: Array.isArray(article.paragraphs) ? article.paragraphs as string[] : typeof article.paragraphs === "string" ? [article.paragraphs] : [],

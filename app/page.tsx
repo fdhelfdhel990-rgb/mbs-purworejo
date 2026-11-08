@@ -1,9 +1,43 @@
+import type { Metadata } from "next";
 import AchievementCarousel from "./components/achievement-carousel";
 import HeroBackdrop from "./components/hero-backdrop";
 import Image from "next/image";
 import Link from "next/link";
 import { getPublicHomepageContent, youtubeEmbedUrl, defaultRegistrationTracks } from "./data/public-cms";
 import { safeImageUrl } from "./data/image-utils";
+
+export const metadata: Metadata = {
+  title: "Pondok Pesantren Modern MBS Purworejo",
+  description:
+    "Website resmi Pondok Pesantren Modern MBS Purworejo. Informasi profil, pendidikan, kegiatan, berita, dan pendaftaran santri baru.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Pondok Pesantren Modern MBS Purworejo",
+    description:
+      "Website resmi Pondok Pesantren Modern MBS Purworejo. Informasi profil, pendidikan, kegiatan, berita, dan pendaftaran santri baru.",
+    url: "https://mbs-purworejo.vercel.app",
+    siteName: "Pondok Pesantren Modern MBS Purworejo",
+    locale: "id_ID",
+    type: "website",
+    images: [
+      {
+        url: "/images/card.jpeg",
+        width: 1200,
+        height: 630,
+        alt: "Pondok Pesantren Modern MBS Purworejo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Pondok Pesantren Modern MBS Purworejo",
+    description:
+      "Website resmi Pondok Pesantren Modern MBS Purworejo. Informasi profil, pendidikan, kegiatan, berita, dan pendaftaran santri baru.",
+    images: ["/images/card.jpeg"],
+  },
+};
 
 function SectionHeading({
   eyebrow,

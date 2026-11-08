@@ -24,7 +24,7 @@ export default async function SiteFooter() {
       <div className="footer-main">
         <div className="footer-about">
           <Link className="brand brand-footer" href="/">
-            <span className="brand-mark"><Image src="/images/icon.png" alt="" width={38} height={38} /></span>
+            <span className="brand-mark"><Image src="/images/icon.png" alt="Logo Pondok Pesantren Modern MBS Purworejo" width={38} height={38} /></span>
             <span className="brand-copy"><span>PONDOK PESANTREN MODERN</span><strong>MBS PURWOREJO</strong></span>
           </Link>
           <p>{footer.aboutText}</p>
