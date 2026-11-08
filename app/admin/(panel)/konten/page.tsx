@@ -10,6 +10,7 @@ type HomepageContent = {
   heroKicker: string;
   heroTitle: string;
   heroImage: string;
+  heroImages?: string[];
   profileDescription: string;
   profileVideoUrl: string;
   valuesTitle: string;
@@ -22,6 +23,11 @@ const initialContent: HomepageContent = {
   heroKicker: "Pondok Pesantren Modern",
   heroTitle: "MBS Purworejo",
   heroImage: "/images/card.jpeg",
+  heroImages: [
+    "/images/card.jpeg",
+    "/images/card.jpeg",
+    "/images/card.jpeg",
+  ],
   profileDescription: "Pondok Pesantren Modern MBS Purworejo menghadirkan pendidikan Islami yang memadukan ilmu, karakter, dan kemandirian.",
   profileVideoUrl: "https://youtu.be/GrEcOhJ4900",
   valuesTitle: "Mendidik dengan Kasih Sayang, Keteladanan & Inspirasi",
@@ -33,7 +39,6 @@ export default function AdminHomepageContent() {
   const [content, setContent] = useState(initialContent);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploadingKey, setUploadingKey] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -49,9 +54,21 @@ export default function AdminHomepageContent() {
       if (!active) return;
       if (data?.data && typeof data.data === "object") {
         const loaded = data.data as Partial<HomepageContent>;
+        const baseImg = loaded.heroImage || initialContent.heroImage;
+        let loadedHeroImages = Array.isArray(loaded.heroImages) && loaded.heroImages.length > 0
+          ? loaded.heroImages.filter(Boolean)
+          : [baseImg, baseImg, baseImg];
+
+        while (loadedHeroImages.length < 3) {
+          loadedHeroImages.push(loadedHeroImages[0] || baseImg);
+        }
+        loadedHeroImages = loadedHeroImages.slice(0, 3);
+
         setContent({
           ...initialContent,
           ...loaded,
+          heroImage: loadedHeroImages[0] || baseImg,
+          heroImages: loadedHeroImages,
         });
       }
       if (loadError) setError("Konten belum termuat. Pastikan migrasi database sudah dijalankan.");
@@ -78,7 +95,22 @@ export default function AdminHomepageContent() {
         .maybeSingle();
 
       const existingData = existingRow?.data && typeof existingRow.data === "object" ? existingRow.data : {};
-      const mergedData = { ...existingData, ...content };
+
+      const cleanedHeroImages = (content.heroImages || [])
+        .map((s) => (typeof s === "string" ? s.trim() : ""))
+        .filter(Boolean)
+        .slice(0, 3);
+
+      const finalHeroImages = cleanedHeroImages.length > 0
+        ? cleanedHeroImages
+        : [content.heroImage || "/images/card.jpeg"];
+
+      const mergedData = {
+        ...existingData,
+        ...content,
+        heroImages: finalHeroImages,
+        heroImage: finalHeroImages[0] || "/images/card.jpeg",
+      };
 
       const { error: saveError } = await client
         .from("site_settings")
@@ -161,7 +193,73 @@ export default function AdminHomepageContent() {
           {field("arabic", "Tulisan Arab")}
           {field("heroKicker", "Label Utama (Kicker)")}
           {field("heroTitle", "Judul Hero")}
-          {imageField("heroImage", "Foto Latar Hero", "Unggah gambar baru atau gunakan path lokal seperti /images/card.jpeg")}
+        </div>
+
+        <div className="admin-card-heading admin-settings-heading">
+          <div>
+            <h2>Foto Banner Carousel (Maksimal 3 Gambar)</h2>
+            <p>
+              Banner beranda berganti otomatis secara berkala. Anda dapat mengatur hingga 3 gambar slide latar.
+            </p>
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px", padding: "0 24px 20px" }}>
+          {[0, 1, 2].map((idx) => {
+            const currentImg = content.heroImages?.[idx] || (idx === 0 ? content.heroImage : "");
+            return (
+              <div
+                key={idx}
+                style={{
+                  background: "#fbfcfb",
+                  border: "1px solid #dce4dc",
+                  borderRadius: "8px",
+                  padding: "16px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "10px",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <strong style={{ fontSize: "13px", color: "#1b4d24" }}>
+                    Banner {idx + 1} {idx === 0 ? "(Slide Utama)" : `(Slide ${idx + 1})`}
+                  </strong>
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      color: idx === 0 ? "#1b4d24" : "#687a6b",
+                      background: idx === 0 ? "#e7f3e5" : "#eef3ed",
+                      padding: "2px 8px",
+                      borderRadius: "12px",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {idx === 0 ? "Utama" : `Slide ${idx + 1}`}
+                  </span>
+                </div>
+                <ImageUploadDropzone
+                  value={currentImg}
+                  onChange={(url) => {
+                    setContent((curr) => {
+                      const nextImages = [...(curr.heroImages || ["", "", ""])];
+                      nextImages[idx] = url;
+                      return {
+                        ...curr,
+                        heroImages: nextImages,
+                        heroImage: idx === 0 ? url : (nextImages[0] || curr.heroImage),
+                      };
+                    });
+                  }}
+                  label={`Foto Banner ${idx + 1}`}
+                  hint={
+                    idx === 0
+                      ? "Gambar utama yang pertama kali tampil saat website dibuka."
+                      : `Gambar carousel slide ke-${idx + 1}. Unggah foto baru atau gunakan gambar yang ada.`
+                  }
+                />
+              </div>
+            );
+          })}
         </div>
 
         <div className="admin-card-heading admin-settings-heading">
@@ -214,7 +312,7 @@ export default function AdminHomepageContent() {
         {message && <p className="admin-success" role="status">{message}</p>}
 
         <div className="admin-form-actions">
-          <button className="admin-primary-button" type="submit" disabled={saving || loading || uploadingKey !== null}>
+          <button className="admin-primary-button" type="submit" disabled={saving || loading}>
             {saving ? "Menyimpan…" : loading ? "Memuat…" : "Simpan Perubahan Beranda"}
           </button>
           <a className="admin-secondary-button" href="/" target="_blank">

@@ -50,9 +50,33 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .nav-cta { min-height: 42px; padding-inline: 18px; flex: 0 0 auto; white-space: nowrap; }
 
 .hero { position: relative; min-height: clamp(500px, 48vw, 655px); display: flex; align-items: center; overflow: hidden; isolation: isolate; color: #fff; background: var(--green-950); }
-.hero-backdrop { position: absolute; z-index: -2; inset: 0; background-image: linear-gradient(90deg, rgba(8,25,19,.57) 0%, rgba(13,35,26,.26) 45%, rgba(8,29,21,.08) 100%), linear-gradient(0deg, rgba(9,34,26,.16), transparent 46%), url("/images/card.jpeg"); background-position: center 53%; background-size: cover; transform: scale(1.01); animation: hero-drift 32s ease-in-out infinite alternate; }
+.hero-backdrop { position: absolute; z-index: -2; inset: 0; background-position: center 53%; background-size: cover; transform: scale(1.01); }
+.hero-slide { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity 0.8s ease-in-out, visibility 0.8s ease-in-out; will-change: opacity; }
+.hero-slide.is-active { opacity: 1; visibility: visible; z-index: 0; }
 .hero-backdrop-image { object-fit: cover; object-position: center 53%; transform: translate3d(0, var(--hero-parallax-y, 0px), 0) scale(1.08); }
 .hero-backdrop::after { position: absolute; z-index: 1; inset: 0; background: linear-gradient(90deg, rgba(8,25,19,.39) 0%, rgba(13,35,26,.18) 48%, rgba(8,29,21,.04) 100%), linear-gradient(0deg, rgba(9,34,26,.12), transparent 46%); content: ""; pointer-events: none; }
+
+.hero-carousel-controls { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+.hero-carousel-arrow { position: absolute; top: 50%; transform: translateY(-50%); z-index: 6; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(10, 28, 19, 0.45); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border: 1px solid rgba(255, 255, 255, 0.25); color: #ffffff; cursor: pointer; pointer-events: auto; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); opacity: 0.7; }
+.hero-carousel-arrow:hover, .hero-carousel-arrow:focus-visible { opacity: 1; background: rgba(21, 70, 34, 0.85); border-color: rgba(255, 255, 255, 0.65); transform: translateY(-50%) scale(1.08); }
+.hero-carousel-arrow.prev { left: clamp(14px, 3vw, 36px); }
+.hero-carousel-arrow.next { right: clamp(14px, 3vw, 36px); }
+.hero-carousel-arrow svg { width: 22px; height: 22px; }
+
+.hero-carousel-dots { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; z-index: 6; pointer-events: auto; padding: 6px 12px; border-radius: 20px; background: rgba(10, 28, 19, 0.45); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border: 1px solid rgba(255, 255, 255, 0.15); }
+.hero-carousel-dot { width: 9px; height: 9px; border-radius: 9999px; background: rgba(255, 255, 255, 0.45); border: 1px solid rgba(255, 255, 255, 0.7); padding: 0; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+.hero-carousel-dot:hover { background: rgba(255, 255, 255, 0.85); transform: scale(1.2); }
+.hero-carousel-dot.is-active { width: 26px; background: #ecc154; border-color: #ecc154; box-shadow: 0 0 8px rgba(236, 193, 84, 0.6); }
+
+@media (max-width: 640px) {
+  .hero-carousel-arrow { width: 36px; height: 36px; opacity: 0.85; }
+  .hero-carousel-arrow.prev { left: 8px; }
+  .hero-carousel-arrow.next { right: 8px; }
+  .hero-carousel-arrow svg { width: 18px; height: 18px; }
+  .hero-carousel-dots { bottom: 16px; gap: 6px; padding: 5px 10px; }
+  .hero-carousel-dot { width: 8px; height: 8px; }
+  .hero-carousel-dot.is-active { width: 20px; }
+}
 .hero-clouds { position: absolute; z-index: -1; inset: 0; overflow: hidden; pointer-events: none; }
 .cloud { position: absolute; width: 42vw; max-width: 700px; height: auto; aspect-ratio: 1080 / 1035; background: rgba(255,255,255,.48); filter: blur(4px); opacity: 0; -webkit-mask-image: url("/images/cloud-motion.png"); mask-image: url("/images/cloud-motion.png"); -webkit-mask-position: center; mask-position: center; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
 .cloud-one, .cloud-two, .cloud-three { height: auto; }

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import AchievementCarousel from "./components/achievement-carousel";
-import HeroBackdrop from "./components/hero-backdrop";
+import HeroCarousel from "./components/hero-carousel";
 import Image from "next/image";
 import Link from "next/link";
 import { getPublicHomepageContent, youtubeEmbedUrl, defaultRegistrationTracks } from "./data/public-cms";
@@ -68,7 +68,7 @@ export default async function Home() {
     <>
       <main>
         <section className="hero" id="home">
-          <HeroBackdrop src={safeImageUrl(settings.heroImage)} />
+          <HeroCarousel images={settings.heroImages} src={safeImageUrl(settings.heroImage)} />
           <div className="hero-clouds" aria-hidden="true">
             <span className="cloud cloud-one" />
             <span className="cloud cloud-two" />

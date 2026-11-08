@@ -33,6 +33,7 @@ export type HomepageSettings = {
   heroKicker: string;
   heroTitle: string;
   heroImage: string;
+  heroImages?: string[];
   profileDescription: string;
   profileVideoUrl: string;
   valuesTitle: string;
@@ -50,6 +51,11 @@ export const defaultHomepageSettings: HomepageSettings = {
   heroKicker: "Pondok Pesantren Modern",
   heroTitle: "MBS Purworejo",
   heroImage: "/images/card.jpeg",
+  heroImages: [
+    "/images/card.jpeg",
+    "/images/card.jpeg",
+    "/images/card.jpeg",
+  ],
   profileDescription: "Pondok Pesantren Modern MBS Purworejo menghadirkan pendidikan Islami yang memadukan ilmu, karakter, dan kemandirian. Sejak 1986, kami mendampingi santri untuk bertumbuh menjadi pribadi yang beriman, berwawasan luas, dan membawa manfaat.",
   profileVideoUrl: "https://youtu.be/GrEcOhJ4900",
   valuesTitle: "Mendidik dengan Kasih Sayang, Keteladanan & Inspirasi",
@@ -171,10 +177,28 @@ export async function getPublicHomepageContent() {
   ]);
 
   const rawSettings = settingsResult.data?.data && typeof settingsResult.data.data === "object" ? settingsResult.data.data as Partial<HomepageSettings> : null;
+  const baseHeroImg = safeImageUrl(rawSettings?.heroImage, defaultHomepageSettings.heroImage);
+
+  let resolvedHeroImages: string[] = [];
+  if (Array.isArray(rawSettings?.heroImages) && rawSettings.heroImages.length > 0) {
+    resolvedHeroImages = rawSettings.heroImages
+      .filter((url) => typeof url === "string" && url.trim().length > 0)
+      .map((url) => safeImageUrl(url, baseHeroImg))
+      .slice(0, 3);
+  }
+
+  // Duplicate up to 3 slides if empty or single image
+  if (resolvedHeroImages.length === 0) {
+    resolvedHeroImages = [baseHeroImg, baseHeroImg, baseHeroImg];
+  } else if (resolvedHeroImages.length === 1) {
+    resolvedHeroImages = [resolvedHeroImages[0], resolvedHeroImages[0], resolvedHeroImages[0]];
+  }
+
   const settings: HomepageSettings = rawSettings ? {
     ...defaultHomepageSettings,
     ...rawSettings,
-    heroImage: safeImageUrl(rawSettings.heroImage, defaultHomepageSettings.heroImage),
+    heroImage: baseHeroImg,
+    heroImages: resolvedHeroImages,
     valuesImage: safeImageUrl(rawSettings.valuesImage, defaultHomepageSettings.valuesImage),
     registrationAcademicYear: rawSettings.registrationAcademicYear || defaultHomepageSettings.registrationAcademicYear,
     registrationUrl: rawSettings.registrationUrl || defaultHomepageSettings.registrationUrl,
