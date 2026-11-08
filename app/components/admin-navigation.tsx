@@ -33,6 +33,7 @@ const navGroups: NavGroup[] = [
     items: [
       { href: "/admin/pendaftaran", label: "Pendaftaran (PSB)", number: "06" },
       { href: "/admin/footer", label: "Kontak & Footer", number: "07" },
+      { href: "/admin/donasi", label: "Program Donasi", number: "08" },
     ],
   },
 ];

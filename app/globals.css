@@ -49,14 +49,14 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .button-gold:hover { background: #e99e00; box-shadow: 0 8px 22px rgba(233, 158, 0, .35); }
 .nav-cta { min-height: 42px; padding-inline: 18px; flex: 0 0 auto; white-space: nowrap; }
 
-.hero { position: relative; min-height: 440px; height: clamp(420px, 48vw, 540px); display: flex; align-items: center; overflow: hidden; isolation: isolate; color: #fff; background: var(--green-950); }
+.hero { position: relative; min-height: 380px; height: clamp(380px, 35.7vw, 620px); display: flex; align-items: center; overflow: hidden; isolation: isolate; color: #fff; background: var(--green-950); }
 .hero-slide-clickable { position: absolute; inset: 0; z-index: 4; cursor: pointer; display: block; }
 .hero:has(.hero-slide-clickable) { cursor: pointer; }
-.hero-backdrop { position: absolute; z-index: -2; inset: 0; background-position: center 53%; background-size: cover; transform: scale(1.01); }
+.hero-backdrop { position: absolute; z-index: -2; inset: 0; background-position: center center; background-size: cover; transform: none; }
 .hero-slide { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity 0.8s ease-in-out, visibility 0.8s ease-in-out; will-change: opacity; }
 .hero-slide.is-active { opacity: 1; visibility: visible; z-index: 0; }
-.hero-backdrop-image { object-fit: cover; object-position: center 53%; transform: translate3d(0, var(--hero-parallax-y, 0px), 0) scale(1.08); }
-.hero-backdrop::after { position: absolute; z-index: 1; inset: 0; background: linear-gradient(90deg, rgba(8,25,19,.39) 0%, rgba(13,35,26,.18) 48%, rgba(8,29,21,.04) 100%), linear-gradient(0deg, rgba(9,34,26,.12), transparent 46%); content: ""; pointer-events: none; }
+.hero-backdrop-image { object-fit: cover; object-position: center center; transform: translate3d(0, var(--hero-parallax-y, 0px), 0); }
+.hero-backdrop::after { position: absolute; z-index: 1; inset: 0; background: linear-gradient(90deg, rgba(8,25,19,.22) 0%, rgba(13,35,26,.08) 50%, rgba(8,29,21,0) 100%), linear-gradient(0deg, rgba(9,34,26,.1) 0%, transparent 40%); content: ""; pointer-events: none; }
 
 .hero-carousel-controls { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
 .hero-carousel-arrow { position: absolute; top: 50%; transform: translateY(-50%); z-index: 6; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(10, 28, 19, 0.45); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border: 1px solid rgba(255, 255, 255, 0.25); color: #ffffff; cursor: pointer; pointer-events: auto; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); opacity: 0.7; }
@@ -720,7 +720,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .main-nav a { font-size: 11px; }
   .main-nav .nav-active::after { bottom: 17px; }
   .nav-cta { min-height: 36px; padding-inline: 11px; font-size: 10px; }
-  .hero { min-height: 340px; height: clamp(340px, 48vw, 440px); }
+  .hero { min-height: 280px; height: clamp(280px, 35.7vw, 420px); }
   .hero-backdrop { background-position: 58% center; }
   .hero-content { width: calc(100% - 44px); padding-block: 50px 60px; }
   .hero h1 { font-size: clamp(40px, 8vw, 58px); }
@@ -833,8 +833,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 /* Homepage proportions tuned to the supplied reference */
 .content-width { width: min(1320px, calc(100% - 64px)); }
-.hero { min-height: 440px; height: clamp(420px, 48vw, 540px); }
-.hero-backdrop { background-image: linear-gradient(90deg, rgba(8,25,19,.39) 0%, rgba(13,35,26,.18) 48%, rgba(8,29,21,.04) 100%), linear-gradient(0deg, rgba(9,34,26,.12), transparent 46%), url("/images/card.jpeg"); background-position: center 53%; }
+.hero { min-height: 380px; height: clamp(380px, 35.7vw, 620px); }
+.hero-backdrop { background-image: linear-gradient(90deg, rgba(8,25,19,.22) 0%, rgba(13,35,26,.08) 50%, rgba(8,29,21,0) 100%), linear-gradient(0deg, rgba(9,34,26,.1) 0%, transparent 40%), url("/images/card.jpeg"); background-position: center center; }
 .hero-content { width: min(1320px, calc(100% - 64px)); }
 .hero .arabic { margin-bottom: 12px; font-size: clamp(18px, 1.8vw, 24px); }
 .hero-kicker { font-size: clamp(22px, 2.6vw, 36px); }
@@ -899,7 +899,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 @media (max-width: 900px) {
   .content-width, .hero-content { width: min(100% - 40px, 720px); }
-  .hero { min-height: 440px; height: clamp(420px, 48vw, 540px); }
+  .hero { min-height: 320px; height: clamp(320px, 35.7vw, 480px); }
   .profile { padding: 86px 0 76px; gap: 34px; }
   .values { min-height: 0; padding: 38px 30px; grid-template-columns: 1fr .9fr; gap: 28px; }
   .values-list article { min-height: 78px; padding: 12px; }
@@ -918,7 +918,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 @media (max-width: 560px) {
   .content-width, .hero-content { width: min(100% - 32px, 480px); }
-  .hero { min-height: 340px; height: clamp(340px, 48vw, 440px); }
+  .hero { min-height: 240px; height: clamp(240px, 56.25vw, 360px); }
   .hero-content { padding-block: 44px 56px; }
   .hero .arabic { font-size: 16px; }
   .hero-kicker { font-size: clamp(18px, 5.2vw, 24px); }
@@ -1275,7 +1275,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
     transform: none !important;
     transition: none !important;
   }
-  .hero-backdrop-image { transform: scale(1.03); }
+  .hero-backdrop-image { transform: none; }
 }
 
 /* Tighten homepage section spacing while leaving other pages untouched. */
@@ -1359,4 +1359,1033 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .menu-toggle:hover span, .menu-toggle:focus-visible span { background: var(--green-800) !important; }
   .menu-toggle.is-open { background: #eef3ec !important; border-color: #d1ded0 !important; }
 }
+
+/* ==========================================================================
+   DONATION PAGE & DIGITAL INVOICE NOTA STYLING (Clean & Consistent Design System)
+   ========================================================================== */
+
+.donation-page-shell {
+  min-height: 100vh;
+  background-color: #f7faf7;
+  padding-bottom: 72px;
+}
+
+.donation-container {
+  width: min(1040px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.donation-main-wrap {
+  padding-top: 36px;
+}
+
+/* Campaign Overview Card */
+.donation-campaign-card {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 28px;
+  background: #ffffff;
+  border: 1px solid #e1ebe0;
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 28px;
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .donation-campaign-card {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 18px;
+  }
+}
+
+.campaign-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #eef3ed;
+  border: 1px solid #e3ede2;
+}
+
+.campaign-category-pill {
+  display: inline-block;
+  background: #eef6ef;
+  color: #154622;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  margin-bottom: 10px;
+  border: 1px solid #d3e5d5;
+}
+
+.campaign-title {
+  font-size: clamp(20px, 2.2vw, 26px);
+  font-weight: 800;
+  color: #102717;
+  line-height: 1.25;
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+}
+
+.campaign-subtitle {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #27422e;
+  line-height: 1.5;
+  margin: 0 0 8px;
+}
+
+.campaign-desc {
+  font-size: 13.5px;
+  color: #4b5f50;
+  line-height: 1.6;
+  margin: 0 0 16px;
+}
+
+.campaign-progress-block {
+  background: #fbfdfb;
+  border: 1px solid #e5ede4;
+  border-radius: 10px;
+  padding: 14px 18px;
+}
+
+.campaign-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.campaign-collected {
+  display: block;
+  font-size: clamp(20px, 2vw, 24px);
+  font-weight: 800;
+  color: #154622;
+  letter-spacing: -0.02em;
+}
+
+.campaign-target-label {
+  font-size: 12px;
+  color: #637768;
+}
+
+.campaign-donors-stat {
+  text-align: right;
+  font-size: 11.5px;
+  color: #637768;
+}
+
+.campaign-donors-stat strong {
+  display: block;
+  font-size: 17px;
+  color: #102717;
+}
+
+.campaign-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e3ece3;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.campaign-progress-fill {
+  height: 100%;
+  background: #154622;
+  border-radius: 9999px;
+  transition: width 0.6s ease;
+}
+
+/* Donation Form Wrapper */
+.donation-form-wrapper {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.donation-card-box {
+  background: #ffffff;
+  border: 1px solid #e1ebe0;
+  border-radius: 14px;
+  padding: 28px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 640px) {
+  .donation-card-box {
+    padding: 20px 16px;
+  }
+}
+
+.form-group-block {
+  margin-bottom: 22px;
+}
+
+.form-section-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: #122919;
+  margin-bottom: 8px;
+}
+
+.req-star {
+  color: #dc2626;
+  margin-left: 2px;
+}
+
+.quick-amounts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 600px) {
+  .quick-amounts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.quick-chip-btn {
+  padding: 10px 12px;
+  background: #f7faf7;
+  border: 1px solid #d4ded3;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #193d24;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.quick-chip-btn:hover {
+  background: #edf5ee;
+  border-color: #154622;
+}
+
+.quick-chip-btn.is-selected {
+  background: #eef6ef;
+  border-color: #154622;
+  color: #154622;
+  font-weight: 700;
+}
+
+.nominal-input-wrap {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1.5px solid #d0ded1;
+  border-radius: 8px;
+  padding: 8px 14px;
+  transition: border-color 0.15s;
+}
+
+.nominal-input-wrap:focus-within {
+  border-color: #154622;
+}
+
+.nominal-prefix {
+  font-size: 17px;
+  font-weight: 700;
+  color: #637768;
+  margin-right: 8px;
+}
+
+.nominal-text-input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #102717;
+  background: transparent;
+}
+
+/* Payment Methods Stack */
+.payment-methods-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.payment-method-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid #d8e5d9;
+  border-radius: 10px;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.payment-method-card:hover {
+  background: #f7faf7;
+  border-color: #154622;
+}
+
+.payment-method-card.is-active {
+  background: #f2f7f2;
+  border-color: #154622;
+}
+
+.payment-method-card input[type="radio"] {
+  width: 17px;
+  height: 17px;
+  accent-color: #154622;
+  cursor: pointer;
+}
+
+.method-info {
+  flex: 1;
+}
+
+.method-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.method-title-row strong {
+  font-size: 14px;
+  color: #102717;
+}
+
+.method-sub {
+  font-size: 12px;
+  color: #55695a;
+  margin: 0;
+}
+
+.donation-text-field {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #d0ded1;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #15291b;
+  outline: 0;
+  transition: border-color 0.15s;
+  background: #ffffff;
+}
+
+.donation-text-field:focus {
+  border-color: #154622;
+}
+
+.donation-text-field:disabled {
+  background: #f2f5f2;
+  color: #839686;
+  cursor: not-allowed;
+}
+
+.donation-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #3b5040;
+  cursor: pointer;
+  user-select: none;
+}
+
+.donation-checkbox-row.align-top {
+  align-items: flex-start;
+}
+
+.donation-checkbox-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #154622;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.form-subheading {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #193822;
+  margin: 0 0 10px;
+}
+
+.form-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 600px) {
+  .form-two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-sub-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #384d3e;
+  margin-bottom: 5px;
+}
+
+.field-hint {
+  display: block;
+  font-size: 11.5px;
+  color: #637768;
+  margin-top: 4px;
+}
+
+/* Notice Box Red */
+.donation-notice-red {
+  background: #fff8f8;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: #b91c1c;
+  font-size: 12px;
+  line-height: 1.55;
+  margin-bottom: 18px;
+}
+
+.donation-notice-red strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.donation-notice-red ol {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.donation-notice-red li {
+  margin-bottom: 3px;
+}
+
+/* Agreement Box */
+.donation-agreement-box {
+  background: #fbfdfb;
+  border: 1px solid #e2ebe2;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 20px;
+}
+
+.agreement-text {
+  font-size: 12px;
+  line-height: 1.55;
+  color: #445648;
+}
+
+.donation-btn-submit {
+  width: 100%;
+  min-height: 48px;
+  background: #ecc154;
+  color: #173f22;
+  font-size: 15px;
+  font-weight: 700;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.donation-btn-submit:hover {
+  background: #dfb342;
+}
+
+.donation-alert {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+
+.donation-alert.is-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+
+/* ==========================================================================
+   OFFICIAL NOTA / INVOICE DIGITAL DISPLAY & PRINTING
+   ========================================================================== */
+
+.invoice-screen-wrap {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.invoice-top-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.invoice-back-btn {
+  background: transparent;
+  border: 0;
+  color: #154622;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.invoice-back-btn:hover {
+  text-decoration: underline;
+}
+
+.invoice-print-btn {
+  background: #ffffff;
+  border: 1px solid #d4ded3;
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #154622;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.invoice-print-btn:hover {
+  background: #f4f8f4;
+}
+
+/* Official Nota Card */
+.official-invoice-card {
+  background: #ffffff;
+  border: 1px solid #d4ded4;
+  border-top: 4px solid #154622;
+  border-radius: 12px;
+  padding: 30px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 640px) {
+  .official-invoice-card {
+    padding: 20px 16px;
+  }
+}
+
+.invoice-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.invoice-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.invoice-mbs-title {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #154622;
+  letter-spacing: -0.01em;
+  margin: 0 0 2px;
+}
+
+.invoice-mbs-sub {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4b6150;
+}
+
+.invoice-mbs-addr {
+  display: block;
+  font-size: 11px;
+  color: #798b7d;
+}
+
+.invoice-status-badge {
+  text-align: right;
+}
+
+.badge-pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.badge-pill.is-pending {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.invoice-id-tag {
+  display: block;
+  font-family: monospace;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #556658;
+  margin-top: 4px;
+}
+
+.invoice-divider {
+  height: 1px;
+  background: #e8eee8;
+  margin: 20px 0;
+}
+
+.invoice-banner-info {
+  background: #fbfdfb;
+  border-left: 3px solid #154622;
+  padding: 10px 16px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.invoice-doc-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #154622;
+  margin: 0 0 2px;
+}
+
+.invoice-doc-desc {
+  font-size: 12px;
+  color: #556658;
+  margin: 0;
+}
+
+.invoice-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 600px) {
+  .invoice-details-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+}
+
+.detail-label {
+  font-size: 11px;
+  color: #6a7c6f;
+  margin-bottom: 2px;
+}
+
+.detail-val {
+  font-size: 13.5px;
+  color: #112718;
+}
+
+.detail-val.text-green {
+  color: #154622;
+  font-weight: 700;
+}
+
+.invoice-prayer-quote {
+  background: #f9fbf9;
+  border: 1px dashed #d0ded1;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+}
+
+.prayer-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #4a6650;
+  margin-bottom: 3px;
+}
+
+.prayer-text {
+  font-style: italic;
+  font-size: 12.5px;
+  color: #2b4532;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Amount Summary Box */
+.invoice-amount-summary {
+  background: #fbfdfb;
+  border: 1px solid #dbe6dc;
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+
+.amount-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13.5px;
+  color: #3b5040;
+  margin-bottom: 6px;
+}
+
+.amount-row.unique-row {
+  color: #92400e;
+  font-weight: 600;
+}
+
+.amount-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  margin-top: 8px;
+  border-top: 1px dashed #cfdcce;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.total-label-wrap strong {
+  display: block;
+  font-size: 14.5px;
+  color: #102717;
+}
+
+.total-label-wrap small {
+  font-size: 11px;
+  color: #637768;
+}
+
+.total-val-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.total-sum-text {
+  font-size: clamp(20px, 2.2vw, 24px);
+  font-weight: 800;
+  color: #154622;
+}
+
+.btn-copy-chip {
+  background: #eef6ef;
+  border: 1px solid #b7d6bb;
+  color: #154622;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-copy-chip:hover {
+  background: #154622;
+  color: #ffffff;
+}
+
+/* Payment Instructions Inside Invoice */
+.invoice-payment-instructions {
+  margin-bottom: 20px;
+}
+
+.invoice-qris-box {
+  background: #fbfcfb;
+  border: 1px solid #e1ebe0;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+}
+
+.qris-box-header {
+  margin-bottom: 12px;
+}
+
+.qris-title {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #154622;
+}
+
+.qris-merchant {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #637768;
+}
+
+.qris-image-container {
+  display: inline-block;
+  padding: 10px;
+  background: #ffffff;
+  border: 1px solid #cce0cd;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.qris-placeholder-box {
+  width: 220px;
+  height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #798b7d;
+  font-size: 12px;
+  padding: 14px;
+  text-align: center;
+}
+
+.qris-svg-icon {
+  width: 44px;
+  height: 44px;
+}
+
+.btn-download-qris {
+  display: inline-block;
+  background: #154622;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 7px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.btn-download-qris:hover {
+  background: #1d5c2e;
+}
+
+.qris-steps {
+  text-align: left;
+  margin-top: 16px;
+  background: #f4f8f3;
+  border-radius: 6px;
+  padding: 12px 16px;
+}
+
+.qris-steps h4 {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #154622;
+  margin: 0 0 6px;
+}
+
+.qris-steps ol {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  color: #3b5040;
+  line-height: 1.55;
+}
+
+/* Bank Box Inside Invoice */
+.invoice-bank-box {
+  background: #fbfcfb;
+  border: 1px solid #e1ebe0;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.bank-section-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #154622;
+  margin: 0 0 12px;
+}
+
+.bank-account-card {
+  background: #ffffff;
+  border: 1px solid #154622;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 14px;
+}
+
+.bank-name-badge {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #154622;
+  margin-bottom: 8px;
+}
+
+.account-number-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.account-num-label {
+  font-size: 12px;
+  color: #637768;
+}
+
+.account-num-big {
+  font-family: monospace;
+  font-size: 20px;
+  font-weight: 800;
+  color: #102717;
+  letter-spacing: 0.05em;
+}
+
+.account-holder-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: #4b5d50;
+}
+
+.bank-transfer-steps {
+  background: #f4f8f3;
+  border-radius: 6px;
+  padding: 12px 16px;
+}
+
+.bank-transfer-steps h4 {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #154622;
+  margin: 0 0 6px;
+}
+
+.bank-transfer-steps ol {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  color: #3b5040;
+  line-height: 1.55;
+}
+
+/* Nota Footer */
+.invoice-card-footer {
+  border-top: 1px solid #e8eee8;
+  padding-top: 16px;
+  text-align: center;
+}
+
+.invoice-thankyou-text {
+  font-style: italic;
+  font-size: 12px;
+  color: #55695a;
+  line-height: 1.55;
+  margin: 0 0 8px;
+}
+
+.invoice-mbs-signature {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #154622;
+}
+
+/* Bottom Invoice Action Buttons */
+.invoice-bottom-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-confirm-whatsapp {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 48px;
+  background: #25d366;
+  color: #ffffff;
+  font-size: 14.5px;
+  font-weight: 700;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.btn-confirm-whatsapp:hover {
+  background: #20bd5a;
+}
+
+.btn-new-donation {
+  width: 100%;
+  min-height: 42px;
+  background: #ffffff;
+  border: 1px solid #d4ded3;
+  color: #4b6150;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-new-donation:hover {
+  background: #f4f8f4;
+  color: #154622;
+}
+
+/* ==========================================================================
+   PRINT MEDIA RULES (For Clean Physical/PDF Invoice Receipts)
+   ========================================================================== */
+
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .site-header,
+  .site-footer,
+  .whatsapp-fab,
+  .donation-top-announcement,
+  .no-print,
+  .admin-shell aside,
+  .admin-topbar {
+    display: none !important;
+  }
+
+  .donation-page-shell {
+    background: transparent !important;
+    padding: 0 !important;
+  }
+
+  .official-invoice-card {
+    border: 1.5px solid #154622 !important;
+    box-shadow: none !important;
+    padding: 20px !important;
+    margin: 0 !important;
+    page-break-inside: avoid;
+  }
+
+  .btn-copy-chip,
+  .invoice-top-actions,
+  .invoice-bottom-actions {
+    display: none !important;
+  }
+}
+
+
 

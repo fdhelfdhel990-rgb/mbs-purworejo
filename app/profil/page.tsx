@@ -82,7 +82,7 @@ export default async function ProfilPage() {
 
       <section className="values content-width" id="keunggulan">
         <div className="values-bg" aria-hidden="true">
-          <Image src={safeImageUrl(settings.valuesImage)} alt="" fill sizes="(max-width: 900px) 100vw, 50vw" />
+          <Image src={safeImageUrl(settings.valuesImage)} alt="" fill unoptimized sizes="(max-width: 900px) 100vw, 50vw" />
         </div>
         <div className="values-copy">
           <h2>{settings.valuesTitle}</h2>

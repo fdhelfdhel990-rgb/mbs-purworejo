@@ -80,7 +80,7 @@ export default function NewsBrowser({ articles }: { articles: NewsArticle[] }) {
         <div className="news-page-grid">
           {visible.map((article, index) => (
             <Link className="news-card" href={`/berita/detail?id=${article.id}`} key={`${article.id}-${index}`} aria-label={`Baca detail berita: ${article.title}`}>
-              <div className="news-image"><Image src={safeImageUrl(article.image)} alt={`Foto: ${article.title}`} fill sizes="(max-width: 560px) 100vw, (max-width: 900px) 50vw, 33vw" /></div>
+              <div className="news-image"><Image src={safeImageUrl(article.image)} alt={`Foto: ${article.title}`} fill unoptimized sizes="(max-width: 560px) 100vw, (max-width: 900px) 50vw, 33vw" /></div>
               <div className="news-copy">
                 <span className="news-date">{article.date}</span>
                 <span className="news-category">{article.category}</span>

@@ -123,6 +123,7 @@ export default async function BeritaDetailPage({
                 alt={`Foto: ${article.title}`}
                 fill
                 priority
+                unoptimized
                 sizes="(max-width: 900px) 100vw, 66vw"
               />
             </div>
@@ -164,6 +165,7 @@ export default async function BeritaDetailPage({
                         src={safeImageUrl(item.image)}
                         alt={`Foto: ${item.title}`}
                         fill
+                        unoptimized
                         sizes="56px"
                       />
                     </span>

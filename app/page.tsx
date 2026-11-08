@@ -73,11 +73,13 @@ export default async function Home() {
             images={settings.heroImages}
             src={safeImageUrl(settings.heroImage)}
           />
-          <div className="hero-content">
-            <p className="arabic" lang="ar" dir="rtl">{settings.arabic}</p>
-            <p className="hero-kicker">{settings.heroKicker}</p>
-            <h1>{settings.heroTitle}</h1>
-          </div>
+          {(settings.arabic || settings.heroKicker || settings.heroTitle) && (
+            <div className="hero-content">
+              {settings.arabic && <p className="arabic" lang="ar" dir="rtl">{settings.arabic}</p>}
+              {settings.heroKicker && <p className="hero-kicker">{settings.heroKicker}</p>}
+              {settings.heroTitle && <h1>{settings.heroTitle}</h1>}
+            </div>
+          )}
         </section>
 
         <section className="profile content-width" id="profil">
@@ -101,7 +103,7 @@ export default async function Home() {
         </section>
 
         <section className="values content-width" id="keunggulan">
-          <div className="values-bg" aria-hidden="true"><Image src={safeImageUrl(settings.valuesImage)} alt="" fill sizes="(max-width: 900px) 100vw, 50vw" /></div>
+          <div className="values-bg" aria-hidden="true"><Image src={safeImageUrl(settings.valuesImage)} alt="" fill unoptimized sizes="(max-width: 900px) 100vw, 50vw" /></div>
           <div className="values-copy">
             <h2>{settings.valuesTitle}</h2>
             <p>{settings.valuesDescription}</p>
@@ -125,7 +127,7 @@ export default async function Home() {
             <div className="news-grid">
               {articles.slice(0, 6).map((item) => (
                 <Link className="news-card" href={`/berita/detail?id=${item.id}`} key={item.id}>
-                  <div className="news-image"><Image src={safeImageUrl(item.image)} alt={`Foto: ${item.title}`} fill sizes="(max-width: 560px) 100vw, (max-width: 900px) 50vw, 33vw" /></div>
+                  <div className="news-image"><Image src={safeImageUrl(item.image)} alt={`Foto: ${item.title}`} fill unoptimized sizes="(max-width: 560px) 100vw, (max-width: 900px) 50vw, 33vw" /></div>
                   <div className="news-copy">
                     <span className="news-date">{item.date}</span>
                     <h3>{item.title}</h3>

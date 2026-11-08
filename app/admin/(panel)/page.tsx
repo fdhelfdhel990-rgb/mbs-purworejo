@@ -157,6 +157,14 @@ export default async function AdminDashboardPage() {
             </span>
             <b>→</b>
           </Link>
+          <Link href="/admin/donasi">
+            <span>♥</span>
+            <span>
+              <strong>Program donasi</strong>
+              <small>Metode QRIS, rekening bank & target</small>
+            </span>
+            <b>→</b>
+          </Link>
         </section>
       </div>
     </>

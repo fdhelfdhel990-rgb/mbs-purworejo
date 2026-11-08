@@ -249,3 +249,100 @@ export async function getPublicFooterContent(): Promise<FooterSettings> {
   if (error || !data?.data || typeof data.data !== "object") return defaultFooterSettings;
   return { ...defaultFooterSettings, ...(data.data as Partial<FooterSettings>) };
 }
+
+export type BankAccount = {
+  id: string;
+  bankName: string;
+  accountNumber: string;
+  accountHolder: string;
+};
+
+export type DonationSettings = {
+  enabled: boolean;
+  campaignTitle: string;
+  campaignCategory: string;
+  campaignSubtitle: string;
+  campaignDescription: string;
+  campaignImage: string;
+  targetAmount: number;
+  collectedAmount: number;
+  donorCount: number;
+  quickAmounts: number[];
+  qrisEnabled: boolean;
+  qrisImage: string;
+  qrisMerchantName: string;
+  bankAccounts: BankAccount[];
+  confirmationPhone: string;
+  confirmationName: string;
+  disclaimerText: string;
+};
+
+export const defaultDonationSettings: DonationSettings = {
+  enabled: true,
+  campaignTitle: "Donasi Pengembangan Pendidikan & Fasilitas Santri",
+  campaignCategory: "Infaq & Sedekah Pendidikan",
+  campaignSubtitle: "Salurkan infaq dan donasi terbaik Anda untuk mencetak generasi penghafal Al-Qur'an dan kader dakwah berakhlak mulia di MBS Purworejo.",
+  campaignDescription: "Setiap rupiah infaq dan donasi yang Anda amanahkan akan disalurkan untuk pemenuhan fasilitas asrama, laboratorium, beasiswa santri berprestasi/dhuafa, serta pengembangan sarana ibadah di lingkungan Pondok Pesantren Modern MBS Purworejo.",
+  campaignImage: "/images/card.jpeg",
+  targetAmount: 250000000,
+  collectedAmount: 85400000,
+  donorCount: 146,
+  quickAmounts: [25000, 50000, 100000, 250000, 500000, 1000000],
+  qrisEnabled: true,
+  qrisImage: "",
+  qrisMerchantName: "MBS PURWOREJO / LAZISMU",
+  bankAccounts: [
+    {
+      id: "bank-bsi",
+      bankName: "Bank Syariah Indonesia (BSI)",
+      accountNumber: "7188822331",
+      accountHolder: "Ponpes Modern MBS Purworejo",
+    },
+    {
+      id: "bank-jateng",
+      bankName: "Bank Jateng Syariah",
+      accountNumber: "5032001122",
+      accountHolder: "MBS Purworejo Infaq",
+    },
+    {
+      id: "bank-bri",
+      bankName: "Bank BRI",
+      accountNumber: "007701001234538",
+      accountHolder: "Pondok Pesantren Modern MBS Purworejo",
+    },
+  ],
+  confirmationPhone: "6281234567890",
+  confirmationName: "Bendahara MBS Purworejo",
+  disclaimerText: "Dengan mengisi formulir ini, saya menyatakan bahwa zakat, infak, sedekah, serta donasi yang ditunaikan berasal dari harta halal yang dimiliki secara sah dan sempurna sesuai ketentuan syariat Islam.",
+};
+
+export async function getPublicDonationContent(): Promise<DonationSettings> {
+  const client = getPublicClient();
+  if (!client) return defaultDonationSettings;
+  const { data, error } = await client.from("site_settings").select("data").eq("key", "donation").maybeSingle();
+  if (error || !data?.data || typeof data.data !== "object") return defaultDonationSettings;
+  const d = data.data as Partial<DonationSettings>;
+
+  const bankAccounts = Array.isArray(d.bankAccounts) && d.bankAccounts.length > 0
+    ? (d.bankAccounts as BankAccount[]).map((b, i) => ({
+        id: b.id || `bank-${i}`,
+        bankName: b.bankName || "Bank Transfer",
+        accountNumber: b.accountNumber || "",
+        accountHolder: b.accountHolder || "MBS Purworejo",
+      }))
+    : defaultDonationSettings.bankAccounts;
+
+  return {
+    ...defaultDonationSettings,
+    ...d,
+    campaignImage: safeImageUrl(d.campaignImage, defaultDonationSettings.campaignImage),
+    qrisImage: safeImageUrl(d.qrisImage, ""),
+    targetAmount: Number(d.targetAmount) || defaultDonationSettings.targetAmount,
+    collectedAmount: Number(d.collectedAmount) || defaultDonationSettings.collectedAmount,
+    donorCount: Number(d.donorCount) || defaultDonationSettings.donorCount,
+    quickAmounts: Array.isArray(d.quickAmounts) && d.quickAmounts.length > 0
+      ? d.quickAmounts.map(Number).filter((n) => !isNaN(n) && n > 0)
+      : defaultDonationSettings.quickAmounts,
+    bankAccounts,
+  };
+}

@@ -125,6 +125,7 @@ export default function AchievementCarousel({ items = defaultAchievements }: { i
                 src={safeImageUrl(item.image, "/images/prestasi1.jpg")}
                 alt={item.offset === 0 ? item.imageAlt || item.title : ""}
                 fill
+                unoptimized
                 sizes="(max-width: 560px) 54vw, (max-width: 900px) 32vw, 30vw"
               />
               <span className="achievement-shade" />
