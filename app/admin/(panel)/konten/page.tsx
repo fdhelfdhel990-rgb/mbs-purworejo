@@ -293,7 +293,9 @@ export default function AdminHomepageContent() {
         <section className="admin-card-section">
           <div className="admin-card-section-header">
             <h2>1. Foto Banner (Carousel)</h2>
-            <p>Banner utama website (proporsi seperti referensi Lazismu). Anda dapat mengatur apakah banner dapat diklik ke tautan tertentu.</p>
+            <p>
+              Banner utama halaman depan. <strong>Ukuran desain yang direkomendasikan: 1400 × 500 piksel (Rasio 2.8 : 1)</strong> agar tampil penuh, jernih, dan tidak terpotong di semua ukuran layar desktop maupun ponsel.
+            </p>
           </div>
 
           <div className="admin-slides-stack">
