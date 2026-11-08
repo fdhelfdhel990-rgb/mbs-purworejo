@@ -3,29 +3,67 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const items = [
-  { href: "/admin", label: "Ringkasan", icon: "▦" },
-  { href: "/admin/konten", label: "Konten beranda", icon: "⌂" },
-  { href: "/admin/pendaftaran", label: "Pendaftaran (PSB)", icon: "📝" },
-  { href: "/admin/berita", label: "Berita", icon: "▤" },
-  { href: "/admin/prestasi", label: "Prestasi", icon: "✳" },
-  { href: "/admin/faq", label: "FAQ", icon: "?" },
-  { href: "/admin/footer", label: "Footer website", icon: "⎘" },
+type NavGroup = {
+  category: string;
+  items: {
+    href: string;
+    label: string;
+    number: string;
+  }[];
+};
+
+const navGroups: NavGroup[] = [
+  {
+    category: "UMUM",
+    items: [
+      { href: "/admin", label: "Dashboard", number: "01" },
+    ],
+  },
+  {
+    category: "MANAJEMEN KONTEN",
+    items: [
+      { href: "/admin/konten", label: "Konten Beranda", number: "02" },
+      { href: "/admin/berita", label: "Berita & Artikel", number: "03" },
+      { href: "/admin/prestasi", label: "Prestasi Santri", number: "04" },
+      { href: "/admin/faq", label: "Tanya Jawab (FAQ)", number: "05" },
+    ],
+  },
+  {
+    category: "PENGATURAN & LAYANAN",
+    items: [
+      { href: "/admin/pendaftaran", label: "Pendaftaran (PSB)", number: "06" },
+      { href: "/admin/footer", label: "Kontak & Footer", number: "07" },
+    ],
+  },
 ];
 
 export default function AdminNavigation() {
   const pathname = usePathname();
+
   return (
     <nav className="admin-navigation" aria-label="Navigasi panel admin">
-      {items.map((item) => (
-        <Link
-          className={(item.href === "/admin" ? pathname === item.href : pathname.startsWith(item.href)) ? "is-active" : ""}
-          href={item.href}
-          key={item.href}
-        >
-          <span aria-hidden="true">{item.icon}</span>
-          {item.label}
-        </Link>
+      {navGroups.map((group) => (
+        <div key={group.category} className="admin-nav-group">
+          <span className="admin-nav-group-title">{group.category}</span>
+          <div className="admin-nav-group-items">
+            {group.items.map((item) => {
+              const isActive = item.href === "/admin"
+                ? pathname === item.href
+                : pathname.startsWith(item.href);
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`admin-nav-item ${isActive ? "is-active" : ""}`}
+                >
+                  <span className="admin-nav-num">{item.number}</span>
+                  <span className="admin-nav-label">{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
       ))}
     </nav>
   );

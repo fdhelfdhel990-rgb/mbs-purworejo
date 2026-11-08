@@ -2,8 +2,17 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { createSupabaseBrowserClient } from "../../../../lib/supabase/browser";
+import { safeImageUrl } from "../../../data/image-utils";
 import ImageUploadDropzone from "../../components/image-upload-dropzone";
+
+export type SlideItem = {
+  image: string;
+  hasLink: boolean;
+  linkUrl: string;
+  openInNewTab: boolean;
+};
 
 type HomepageContent = {
   arabic: string;
@@ -11,6 +20,7 @@ type HomepageContent = {
   heroTitle: string;
   heroImage: string;
   heroImages?: string[];
+  heroSlides: SlideItem[];
   profileDescription: string;
   profileVideoUrl: string;
   valuesTitle: string;
@@ -19,14 +29,18 @@ type HomepageContent = {
 };
 
 const initialContent: HomepageContent = {
-  arabic: "معهد محمدية التربية الإسلامية الحديثة",
+  arabic: "معهد محمدية للتربية الإسلامية الحديثة",
   heroKicker: "Pondok Pesantren Modern",
   heroTitle: "MBS Purworejo",
   heroImage: "/images/card.jpeg",
-  heroImages: [
-    "/images/card.jpeg",
-    "/images/card.jpeg",
-    "/images/card.jpeg",
+  heroImages: ["/images/card.jpeg"],
+  heroSlides: [
+    {
+      image: "/images/card.jpeg",
+      hasLink: false,
+      linkUrl: "",
+      openInNewTab: true,
+    },
   ],
   profileDescription: "Pondok Pesantren Modern MBS Purworejo menghadirkan pendidikan Islami yang memadukan ilmu, karakter, dan kemandirian.",
   profileVideoUrl: "https://youtu.be/GrEcOhJ4900",
@@ -36,9 +50,12 @@ const initialContent: HomepageContent = {
 };
 
 export default function AdminHomepageContent() {
-  const [content, setContent] = useState(initialContent);
+  const [content, setContent] = useState<HomepageContent>(initialContent);
+  const [savedSnapshot, setSavedSnapshot] = useState<HomepageContent>(initialContent);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+  const [addingSlide, setAddingSlide] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -55,27 +72,154 @@ export default function AdminHomepageContent() {
       if (data?.data && typeof data.data === "object") {
         const loaded = data.data as Partial<HomepageContent>;
         const baseImg = loaded.heroImage || initialContent.heroImage;
-        let loadedHeroImages = Array.isArray(loaded.heroImages) && loaded.heroImages.length > 0
-          ? loaded.heroImages.filter(Boolean)
-          : [baseImg, baseImg, baseImg];
 
-        while (loadedHeroImages.length < 3) {
-          loadedHeroImages.push(loadedHeroImages[0] || baseImg);
+        // Resolve slides
+        let parsedSlides: SlideItem[] = [];
+        if (Array.isArray(loaded.heroSlides) && loaded.heroSlides.length > 0) {
+          parsedSlides = loaded.heroSlides
+            .filter((s) => s && typeof s === "object" && typeof s.image === "string" && s.image.trim().length > 0)
+            .slice(0, 3)
+            .map((s) => ({
+              image: s.image,
+              hasLink: Boolean(s.hasLink),
+              linkUrl: typeof s.linkUrl === "string" ? s.linkUrl : "",
+              openInNewTab: s.openInNewTab !== false,
+            }));
+        } else if (Array.isArray(loaded.heroImages) && loaded.heroImages.length > 0) {
+          parsedSlides = loaded.heroImages
+            .filter((url) => typeof url === "string" && url.trim().length > 0)
+            .slice(0, 3)
+            .map((url) => ({
+              image: url,
+              hasLink: false,
+              linkUrl: "",
+              openInNewTab: true,
+            }));
         }
-        loadedHeroImages = loadedHeroImages.slice(0, 3);
 
-        setContent({
+        if (parsedSlides.length === 0) {
+          parsedSlides = [{
+            image: baseImg,
+            hasLink: false,
+            linkUrl: "",
+            openInNewTab: true,
+          }];
+        }
+
+        const loadedData: HomepageContent = {
           ...initialContent,
           ...loaded,
-          heroImage: loadedHeroImages[0] || baseImg,
-          heroImages: loadedHeroImages,
-        });
+          heroSlides: parsedSlides,
+          heroImage: parsedSlides[0]?.image || baseImg,
+          heroImages: parsedSlides.map((s) => s.image),
+        };
+
+        setContent(loadedData);
+        setSavedSnapshot(loadedData);
       }
-      if (loadError) setError("Konten belum termuat. Pastikan migrasi database sudah dijalankan.");
+      if (loadError) setError("Konten belum termuat. Periksa koneksi database.");
       setLoading(false);
     })();
     return () => { active = false; };
   }, []);
+
+  const handleCancel = () => {
+    setContent(savedSnapshot);
+    setMessage("");
+    setError("");
+  };
+
+  const uploadFile = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch("/api/admin/media", {
+      method: "POST",
+      body: formData,
+    });
+    const data = (await res.json()) as { ok?: boolean; publicUrl?: string; error?: string };
+    if (!res.ok || !data.publicUrl) {
+      throw new Error(data.error || "Gagal mengunggah foto.");
+    }
+    return data.publicUrl;
+  };
+
+  const handleReplaceSlide = async (index: number, file: File) => {
+    setUploadingIndex(index);
+    setError("");
+    try {
+      const publicUrl = await uploadFile(file);
+      setContent((curr) => {
+        const next = [...curr.heroSlides];
+        next[index] = {
+          ...next[index],
+          image: publicUrl,
+        };
+        return {
+          ...curr,
+          heroSlides: next,
+          heroImage: next[0]?.image || publicUrl,
+          heroImages: next.map((s) => s.image),
+        };
+      });
+      setMessage("✓ Foto slide berhasil diganti.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal mengunggah foto.");
+    } finally {
+      setUploadingIndex(null);
+    }
+  };
+
+  const handleAddSlide = async (file: File) => {
+    if (content.heroSlides.length >= 3) return;
+    setAddingSlide(true);
+    setError("");
+    try {
+      const publicUrl = await uploadFile(file);
+      setContent((curr) => {
+        const next = [
+          ...curr.heroSlides,
+          {
+            image: publicUrl,
+            hasLink: false,
+            linkUrl: "",
+            openInNewTab: true,
+          },
+        ].slice(0, 3);
+        return {
+          ...curr,
+          heroSlides: next,
+          heroImage: next[0]?.image || publicUrl,
+          heroImages: next.map((s) => s.image),
+        };
+      });
+      setMessage("✓ Slide banner baru berhasil ditambahkan.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal menambahkan slide.");
+    } finally {
+      setAddingSlide(false);
+    }
+  };
+
+  const handleDeleteSlide = (index: number) => {
+    if (content.heroSlides.length <= 1) return;
+    setContent((curr) => {
+      const next = curr.heroSlides.filter((_, i) => i !== index);
+      return {
+        ...curr,
+        heroSlides: next,
+        heroImage: next[0]?.image || "/images/card.jpeg",
+        heroImages: next.map((s) => s.image),
+      };
+    });
+  };
+
+  const updateSlide = (index: number, patch: Partial<SlideItem>) => {
+    setContent((curr) => {
+      const next = [...curr.heroSlides];
+      next[index] = { ...next[index], ...patch };
+      return { ...curr, heroSlides: next };
+    });
+  };
 
   const save = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -87,7 +231,6 @@ export default function AdminHomepageContent() {
       const client = createSupabaseBrowserClient();
       const { data: { user } } = await client.auth.getUser();
 
-      // Pertahankan data pendaftaran yang tersimpan di homepage
       const { data: existingRow } = await client
         .from("site_settings")
         .select("data")
@@ -96,20 +239,16 @@ export default function AdminHomepageContent() {
 
       const existingData = existingRow?.data && typeof existingRow.data === "object" ? existingRow.data : {};
 
-      const cleanedHeroImages = (content.heroImages || [])
-        .map((s) => (typeof s === "string" ? s.trim() : ""))
-        .filter(Boolean)
-        .slice(0, 3);
-
-      const finalHeroImages = cleanedHeroImages.length > 0
-        ? cleanedHeroImages
-        : [content.heroImage || "/images/card.jpeg"];
+      const cleanSlides = content.heroSlides.filter((s) => s.image && s.image.trim().length > 0).slice(0, 3);
+      const finalSlides = cleanSlides.length > 0 ? cleanSlides : initialContent.heroSlides;
+      const finalImages = finalSlides.map((s) => s.image);
 
       const mergedData = {
         ...existingData,
         ...content,
-        heroImages: finalHeroImages,
-        heroImage: finalHeroImages[0] || "/images/card.jpeg",
+        heroSlides: finalSlides,
+        heroImages: finalImages,
+        heroImage: finalImages[0] || "/images/card.jpeg",
       };
 
       const { error: saveError } = await client
@@ -122,202 +261,292 @@ export default function AdminHomepageContent() {
           updated_at: new Date().toISOString(),
         });
 
-      if (saveError) {
-        throw new Error(saveError.message);
-      }
+      if (saveError) throw new Error(saveError.message);
 
       await fetch("/api/admin/revalidate", { method: "POST" });
-      setMessage("Perubahan konten beranda berhasil disimpan.");
+      setSavedSnapshot({
+        ...content,
+        heroSlides: finalSlides,
+        heroImages: finalImages,
+        heroImage: finalImages[0],
+      });
+      setMessage("✓ Perubahan konten beranda berhasil disimpan!");
     } catch (err) {
-      setError(err instanceof Error ? `Gagal menyimpan: ${err.message}` : "Konten belum tersimpan. Periksa akses admin.");
+      setError(err instanceof Error ? `Gagal menyimpan: ${err.message}` : "Gagal menyimpan konten.");
     } finally {
       setSaving(false);
     }
-  };
-
-  const imageField = (key: "heroImage" | "valuesImage", label: string, hint?: string) => (
-    <ImageUploadDropzone
-      key={key}
-      value={content[key]}
-      onChange={(url) => setContent((curr) => ({ ...curr, [key]: url }))}
-      label={label}
-      hint={hint}
-    />
-  );
-
-  const field = (
-    key: keyof HomepageContent,
-    label: string,
-    multiline = false,
-    hint?: string
-  ) => {
-    const val = typeof content[key] === "string" ? content[key] : "";
-    return (
-      <label className={multiline ? "is-wide" : ""} key={key}>
-        {label}
-        {multiline ? (
-          <textarea
-            rows={4}
-            value={val}
-            onChange={(e) => setContent((curr) => ({ ...curr, [key]: e.target.value }))}
-          />
-        ) : (
-          <input
-            value={val}
-            onChange={(e) => setContent((curr) => ({ ...curr, [key]: e.target.value }))}
-          />
-        )}
-        {hint && <small>{hint}</small>}
-      </label>
-    );
   };
 
   return (
     <>
       <div className="admin-page-heading">
         <div>
-          <span className="admin-eyebrow">KONTEN WEBSITE</span>
-          <h1>Beranda</h1>
-          <p>Perbarui teks pengenalan utama, gambar hero, video profil, dan banner nilai pendidikan di halaman depan.</p>
+          <span className="admin-eyebrow">MANAJEMEN KONTEN</span>
+          <h1>Konten Beranda</h1>
+          <p>Kelola banner beranda, judul sambutan, video profil, dan pesan keunggulan.</p>
         </div>
       </div>
 
-      <form className="admin-panel-card admin-settings-form" onSubmit={save}>
-        <div className="admin-card-heading">
-          <div>
-            <h2>Bagian Hero Utama</h2>
-            <p>Teks dan foto latar yang pertama kali menyambut pengunjung.</p>
+      <form onSubmit={save}>
+        {/* KATEGORI 1: FOTO BANNER (CAROUSEL) */}
+        <section className="admin-card-section">
+          <div className="admin-card-section-header">
+            <h2>1. Foto Banner (Carousel)</h2>
+            <p>Banner utama website (proporsi seperti referensi Lazismu). Anda dapat mengatur apakah banner dapat diklik ke tautan tertentu.</p>
           </div>
-        </div>
-        <div className="admin-content-form">
-          {field("arabic", "Tulisan Arab")}
-          {field("heroKicker", "Label Utama (Kicker)")}
-          {field("heroTitle", "Judul Hero")}
-        </div>
 
-        <div className="admin-card-heading admin-settings-heading">
-          <div>
-            <h2>Foto Banner Carousel (Maksimal 3 Gambar)</h2>
-            <p>
-              Banner beranda berganti otomatis secara berkala. Anda dapat mengatur hingga 3 gambar slide latar.
-            </p>
-          </div>
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px", padding: "0 24px 20px" }}>
-          {[0, 1, 2].map((idx) => {
-            const currentImg = content.heroImages?.[idx] || (idx === 0 ? content.heroImage : "");
-            return (
-              <div
-                key={idx}
-                style={{
-                  background: "#fbfcfb",
-                  border: "1px solid #dce4dc",
-                  borderRadius: "8px",
-                  padding: "16px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "10px",
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <strong style={{ fontSize: "13px", color: "#1b4d24" }}>
-                    Banner {idx + 1} {idx === 0 ? "(Slide Utama)" : `(Slide ${idx + 1})`}
-                  </strong>
-                  <span
-                    style={{
-                      fontSize: "11px",
-                      color: idx === 0 ? "#1b4d24" : "#687a6b",
-                      background: idx === 0 ? "#e7f3e5" : "#eef3ed",
-                      padding: "2px 8px",
-                      borderRadius: "12px",
-                      fontWeight: 500,
-                    }}
-                  >
-                    {idx === 0 ? "Utama" : `Slide ${idx + 1}`}
-                  </span>
+          <div className="admin-slides-stack">
+            {content.heroSlides.map((slide, idx) => (
+              <div key={idx} className="admin-slide-card">
+                <div className="admin-slide-card-header">
+                  <div className="admin-slide-header-left">
+                    <span className="admin-slide-badge-num">{idx + 1}</span>
+                    <strong>{idx === 0 ? "Banner Utama" : `Banner Slide ${idx + 1}`}</strong>
+                  </div>
+                  {content.heroSlides.length > 1 && (
+                    <button
+                      type="button"
+                      className="admin-slide-btn-del"
+                      onClick={() => handleDeleteSlide(idx)}
+                      title="Hapus slide ini"
+                    >
+                      Hapus
+                    </button>
+                  )}
                 </div>
-                <ImageUploadDropzone
-                  value={currentImg}
-                  onChange={(url) => {
-                    setContent((curr) => {
-                      const nextImages = [...(curr.heroImages || ["", "", ""])];
-                      nextImages[idx] = url;
-                      return {
-                        ...curr,
-                        heroImages: nextImages,
-                        heroImage: idx === 0 ? url : (nextImages[0] || curr.heroImage),
-                      };
-                    });
-                  }}
-                  label={`Foto Banner ${idx + 1}`}
-                  hint={
-                    idx === 0
-                      ? "Gambar utama yang pertama kali tampil saat website dibuka."
-                      : `Gambar carousel slide ke-${idx + 1}. Unggah foto baru atau gunakan gambar yang ada.`
-                  }
-                />
+
+                <div className="admin-slide-content-row">
+                  <div className="admin-slide-thumb-wrap">
+                    <Image
+                      src={safeImageUrl(slide.image)}
+                      alt={`Slide ${idx + 1}`}
+                      fill
+                      sizes="220px"
+                      unoptimized
+                      style={{ objectFit: "cover" }}
+                    />
+                  </div>
+
+                  <div className="admin-slide-settings">
+                    <label className={`admin-btn-outline admin-slide-upload-btn ${uploadingIndex === idx ? "is-disabled" : ""}`}>
+                      {uploadingIndex === idx ? "Mengunggah…" : "Ganti Foto"}
+                      <input
+                        type="file"
+                        hidden
+                        disabled={uploadingIndex !== null}
+                        accept="image/jpeg,image/png,image/webp,image/avif"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) void handleReplaceSlide(idx, file);
+                        }}
+                      />
+                    </label>
+
+                    {/* Pengaturan Link Banner (Enable / Disable) */}
+                    <div className="admin-slide-link-box">
+                      <label className="admin-checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={slide.hasLink}
+                          onChange={(e) => updateSlide(idx, { hasLink: e.target.checked })}
+                        />
+                        <span>Aktifkan tautan (link) saat banner diklik</span>
+                      </label>
+
+                      {slide.hasLink && (
+                        <div className="admin-slide-url-fields">
+                          <input
+                            type="text"
+                            className="admin-input-field"
+                            placeholder="Alamat URL tujuan (misal: https://... atau /berita)"
+                            value={slide.linkUrl}
+                            onChange={(e) => updateSlide(idx, { linkUrl: e.target.value })}
+                          />
+                          <label className="admin-checkbox-sub">
+                            <input
+                              type="checkbox"
+                              checked={slide.openInNewTab}
+                              onChange={(e) => updateSlide(idx, { openInNewTab: e.target.checked })}
+                            />
+                            <span>Buka di tab baru</span>
+                          </label>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
-            );
-          })}
-        </div>
+            ))}
 
-        <div className="admin-card-heading admin-settings-heading">
-          <div>
-            <h2>Profil Singkat & Video</h2>
-            <p>Deskripsi dan video profil YouTube.</p>
+            {content.heroSlides.length < 3 && (
+              <label className={`admin-add-banner-btn ${addingSlide ? "is-disabled" : ""}`}>
+                <span>{addingSlide ? "Mengunggah Slide Baru…" : `＋ Tambah Banner (${content.heroSlides.length}/3)`}</span>
+                <input
+                  type="file"
+                  hidden
+                  disabled={addingSlide || uploadingIndex !== null}
+                  accept="image/jpeg,image/png,image/webp,image/avif"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) void handleAddSlide(file);
+                  }}
+                />
+              </label>
+            )}
           </div>
-        </div>
-        <div className="admin-content-form">
-          {field("profileDescription", "Deskripsi profil", true)}
-          {field("profileVideoUrl", "Tautan YouTube Video Profil", false, "Contoh: https://youtu.be/GrEcOhJ4900")}
-        </div>
+        </section>
 
-        <div className="admin-card-heading admin-settings-heading">
-          <div>
-            <h2>Nilai Pendidikan (Banner Hijau)</h2>
-            <p>Pesan dan gambar pada banner keunggulan di halaman utama.</p>
+        {/* KATEGORI 2: TEKS SAMBUTAN BANNER */}
+        <section className="admin-card-section">
+          <div className="admin-card-section-header">
+            <h2>2. Teks Sambutan Banner</h2>
           </div>
-        </div>
-        <div className="admin-content-form">
-          {field("valuesTitle", "Judul Banner", true)}
-          {field("valuesDescription", "Deskripsi Banner", true)}
-          {imageField("valuesImage", "Foto Banner Nilai Pendidikan", "Pilih foto dari komputer Anda.")}
-        </div>
 
-        {/* Akses Cepat Pendaftaran PSB */}
-        <div className="admin-card-heading admin-settings-heading">
-          <div>
-            <h2>Penerimaan Santri Baru (PSB)</h2>
-            <p>Pengaturan formulir dan jalur pendaftaran telah dipisahkan ke menu khusus.</p>
+          <div className="admin-form-grid-2">
+            <label className="admin-input-group">
+              <span className="admin-label-text">Judul Besar</span>
+              <input
+                className="admin-input-field"
+                type="text"
+                placeholder="MBS Purworejo"
+                value={content.heroTitle}
+                onChange={(e) => setContent((curr) => ({ ...curr, heroTitle: e.target.value }))}
+              />
+            </label>
+
+            <label className="admin-input-group">
+              <span className="admin-label-text">Label Kicker</span>
+              <input
+                className="admin-input-field"
+                type="text"
+                placeholder="Pondok Pesantren Modern"
+                value={content.heroKicker}
+                onChange={(e) => setContent((curr) => ({ ...curr, heroKicker: e.target.value }))}
+              />
+            </label>
+
+            <label className="admin-input-group is-fullwidth">
+              <span className="admin-label-text">Teks Arab (Kaligrafi)</span>
+              <input
+                className="admin-input-field"
+                type="text"
+                dir="rtl"
+                placeholder="معهد محمدية للتربية الإسلامية الحديثة"
+                value={content.arabic}
+                onChange={(e) => setContent((curr) => ({ ...curr, arabic: e.target.value }))}
+              />
+            </label>
           </div>
-        </div>
-        <div style={{ padding: "0 24px 20px" }}>
-          <div style={{ padding: "16px 18px", background: "#f2f7f2", border: "1px solid #d2e4d3", borderRadius: "8px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
-            <div>
-              <strong style={{ fontSize: "14px", color: "#1b4d24", display: "block", marginBottom: "4px" }}>
-                Pengaturan Pendaftaran PSB
-              </strong>
-              <span style={{ fontSize: "12px", color: "#4f6552" }}>
-                Kelola tautan Google Form utama, tahun ajaran, dan tambah/ubah jalur pendaftaran (Prestasi, Reguler, Tahfidz, dsb) di menu khusus.
-              </span>
+        </section>
+
+        {/* KATEGORI 3: PROFIL PESANTREN & VIDEO */}
+        <section className="admin-card-section">
+          <div className="admin-card-section-header">
+            <h2>3. Profil Singkat & Video YouTube</h2>
+          </div>
+
+          <div className="admin-form-grid-1">
+            <label className="admin-input-group">
+              <span className="admin-label-text">Link Video YouTube</span>
+              <input
+                className="admin-input-field"
+                type="url"
+                placeholder="https://youtu.be/..."
+                value={content.profileVideoUrl}
+                onChange={(e) => setContent((curr) => ({ ...curr, profileVideoUrl: e.target.value }))}
+              />
+            </label>
+
+            <label className="admin-input-group">
+              <span className="admin-label-text">Deskripsi Singkat Profil</span>
+              <textarea
+                className="admin-textarea-field"
+                rows={4}
+                value={content.profileDescription}
+                onChange={(e) => setContent((curr) => ({ ...curr, profileDescription: e.target.value }))}
+              />
+            </label>
+          </div>
+        </section>
+
+        {/* KATEGORI 4: NILAI PENDIDIKAN */}
+        <section className="admin-card-section">
+          <div className="admin-card-section-header">
+            <h2>4. Nilai Pendidikan (Banner Hijau)</h2>
+          </div>
+
+          <div className="admin-form-grid-1">
+            <label className="admin-input-group">
+              <span className="admin-label-text">Judul Keunggulan</span>
+              <input
+                className="admin-input-field"
+                type="text"
+                value={content.valuesTitle}
+                onChange={(e) => setContent((curr) => ({ ...curr, valuesTitle: e.target.value }))}
+              />
+            </label>
+
+            <label className="admin-input-group">
+              <span className="admin-label-text">Penjelasan Keunggulan</span>
+              <textarea
+                className="admin-textarea-field"
+                rows={3}
+                value={content.valuesDescription}
+                onChange={(e) => setContent((curr) => ({ ...curr, valuesDescription: e.target.value }))}
+              />
+            </label>
+
+            <div className="admin-input-group">
+              <ImageUploadDropzone
+                value={content.valuesImage}
+                label="Foto Latar Nilai Pendidikan"
+                placeholderTitle="Unggah Foto Latar"
+                onChange={(url) => setContent((curr) => ({ ...curr, valuesImage: url }))}
+              />
             </div>
-            <Link href="/admin/pendaftaran" className="admin-primary-button" style={{ textDecoration: "none", fontSize: "12px", padding: "8px 16px" }}>
-              Buka Pengaturan Pendaftaran 📝
+          </div>
+        </section>
+
+        {/* KATEGORI 5: PSB */}
+        <section className="admin-card-section">
+          <div className="admin-card-section-header">
+            <h2>5. Pendaftaran Santri Baru (PSB)</h2>
+          </div>
+
+          <div className="admin-shortcut-card">
+            <div className="admin-shortcut-info">
+              <strong>Pusat Pengaturan PSB</strong>
+              <p>Kelola formulir, tahun ajaran, dan status jalur pendaftaran.</p>
+            </div>
+            <Link href="/admin/pendaftaran" className="admin-btn-shortcut">
+              Buka Pengaturan PSB 📝
             </Link>
           </div>
-        </div>
+        </section>
 
+        {/* FEEDBACK STATUS */}
         {error && <p className="admin-form-error" role="alert">{error}</p>}
         {message && <p className="admin-success" role="status">{message}</p>}
 
-        <div className="admin-form-actions">
-          <button className="admin-primary-button" type="submit" disabled={saving || loading}>
-            {saving ? "Menyimpan…" : loading ? "Memuat…" : "Simpan Perubahan Beranda"}
+        {/* TOMBOL AKSI BAWAH */}
+        <div className="admin-bottom-actions">
+          <button
+            type="button"
+            className="admin-btn-cancel"
+            onClick={handleCancel}
+            disabled={saving || loading || addingSlide || uploadingIndex !== null}
+          >
+            Batal
           </button>
-          <a className="admin-secondary-button" href="/" target="_blank">
-            Lihat Beranda ↗
-          </a>
+
+          <button
+            type="submit"
+            className="admin-btn-save"
+            disabled={saving || loading || addingSlide || uploadingIndex !== null}
+          >
+            {saving ? "Menyimpan…" : loading ? "Memuat…" : "Simpan Perubahan"}
+          </button>
         </div>
       </form>
     </>

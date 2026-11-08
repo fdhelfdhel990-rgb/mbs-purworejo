@@ -8,14 +8,16 @@ export default function ImageUploadDropzone({
   value,
   onChange,
   required = false,
-  label = "Foto / Gambar",
+  label,
   hint,
+  placeholderTitle = "Unggah file foto",
 }: {
   value?: string;
   onChange: (url: string) => void;
   required?: boolean;
   label?: string;
   hint?: string;
+  placeholderTitle?: string;
 }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -48,7 +50,7 @@ export default function ImageUploadDropzone({
 
   return (
     <div className="admin-field-group is-wide">
-      <label>{label}</label>
+      {label && <label className="admin-field-label">{label}</label>}
 
       {value ? (
         <div className="admin-upload-card">
@@ -58,22 +60,17 @@ export default function ImageUploadDropzone({
               alt="Pratinjau foto"
               fill
               sizes="240px"
+              unoptimized
               style={{ objectFit: "cover" }}
             />
           </div>
           <div className="admin-upload-meta">
+            <span className="admin-upload-status">✓ Foto Terunggah</span>
+            <span className="admin-upload-filename" title={value}>
+              {value.split("/").pop() || value}
+            </span>
             <div className="admin-upload-actions">
-              <label
-                className={`admin-secondary-button ${uploading ? "is-disabled" : ""}`}
-                style={{
-                  cursor: "pointer",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  textAlign: "center",
-                  lineHeight: 1,
-                }}
-              >
+              <label className={`admin-btn-outline ${uploading ? "is-disabled" : ""}`}>
                 {uploading ? "Mengunggah…" : "Ganti Foto"}
                 <input
                   style={{ display: "none" }}
@@ -88,16 +85,9 @@ export default function ImageUploadDropzone({
               </label>
               <button
                 type="button"
-                className="admin-danger-button"
+                className="admin-btn-danger"
                 onClick={handleRemove}
                 disabled={uploading}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  textAlign: "center",
-                  lineHeight: 1,
-                }}
               >
                 Hapus
               </button>
@@ -107,9 +97,22 @@ export default function ImageUploadDropzone({
       ) : (
         <label className={`admin-dropzone ${uploading ? "is-uploading" : ""}`}>
           <div className="admin-dropzone-inner">
-            <span className="admin-dropzone-icon" aria-hidden="true">📁</span>
-            <strong>{uploading ? "Sedang Mengunggah Gambar…" : "Choose your file"}</strong>
-            <p>Klik untuk memilih file foto dari komputer Anda (JPG, PNG, WebP, AVIF hingga 10MB)</p>
+            <div className="admin-dropzone-icon-box" aria-hidden="true">
+              <svg className="admin-upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+            </div>
+            <strong className="admin-dropzone-title">
+              {uploading ? "Sedang Mengunggah Gambar…" : placeholderTitle}
+            </strong>
+            <p className="admin-dropzone-desc">
+              Seret file ke area ini atau pilih dari perangkat
+            </p>
+            <span className="admin-dropzone-sub">
+              Format PNG, JPG, atau WEBP • Maksimal 10 MB
+            </span>
           </div>
           <input
             hidden
@@ -126,8 +129,7 @@ export default function ImageUploadDropzone({
       )}
 
       {error && <p className="admin-form-error" role="alert">{error}</p>}
-      {hint && <small>{hint}</small>}
+      {hint && <small className="admin-field-hint">{hint}</small>}
     </div>
   );
 }
-

@@ -68,12 +68,11 @@ export default async function Home() {
     <>
       <main>
         <section className="hero" id="home">
-          <HeroCarousel images={settings.heroImages} src={safeImageUrl(settings.heroImage)} />
-          <div className="hero-clouds" aria-hidden="true">
-            <span className="cloud cloud-one" />
-            <span className="cloud cloud-two" />
-            <span className="cloud cloud-three" />
-          </div>
+          <HeroCarousel
+            slides={settings.heroSlides}
+            images={settings.heroImages}
+            src={safeImageUrl(settings.heroImage)}
+          />
           <div className="hero-content">
             <p className="arabic" lang="ar" dir="rtl">{settings.arabic}</p>
             <p className="hero-kicker">{settings.heroKicker}</p>

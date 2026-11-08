@@ -23,19 +23,50 @@ export default async function AdminPanelLayout({ children }: Readonly<{ children
   return (
     <div className="admin-shell">
       <aside className="admin-sidebar">
-        <Link className="admin-sidebar-brand" href="/admin">
-          <Image src="/images/icon.png" alt="" width={40} height={40} />
-          <span><strong>MBS PURWOREJO</strong><small>CMS Website</small></span>
+        <Link className="admin-brand-card-link" href="/admin" title="Kembali ke Dashboard">
+          <div className="admin-brand-card">
+            <div className="admin-brand-mark">
+              <Image src="/images/icon.png" alt="Logo MBS Purworejo" width={36} height={36} />
+            </div>
+            <div className="admin-brand-text">
+              <strong className="admin-brand-card-title">MBS PURWOREJO</strong>
+              <span className="admin-brand-card-sub">Pondok Pesantren Modern</span>
+            </div>
+          </div>
         </Link>
-        <div className="admin-sidebar-label">PENGELOLAAN</div>
+
         <AdminNavigation />
+
         <div className="admin-sidebar-bottom">
-          <div className="admin-user"><span className="admin-avatar">{(profile.display_name || user.email || "A").slice(0, 1).toUpperCase()}</span><span><strong>{profile.display_name}</strong><small>{profile.role === "superadmin" ? "Superadmin" : "Admin konten"}</small></span></div>
-          <AdminLogout />
+          <Link className="admin-public-link" href="/" target="_blank">
+            <span aria-hidden="true">↗</span>
+            Lihat website publik
+          </Link>
         </div>
       </aside>
+
       <div className="admin-main">
-        <header className="admin-topbar"><span>Panel pengelola</span><Link href="/" target="_blank">Lihat website <span aria-hidden="true">↗</span></Link></header>
+        <header className="admin-topbar">
+          <div className="admin-topbar-breadcrumb">
+            <span>Workspace</span>
+            <span className="admin-breadcrumb-sep">/</span>
+            <strong>Panel Admin</strong>
+          </div>
+
+          <div className="admin-topbar-user">
+            <div className="admin-user-pill">
+              <span className="admin-avatar">
+                {(profile.display_name || user.email || "A").slice(0, 1).toUpperCase()}
+              </span>
+              <div className="admin-user-meta">
+                <strong>{profile.display_name || "Admin"}</strong>
+                <small>{profile.role === "superadmin" ? "Super admin" : "Admin konten"}</small>
+              </div>
+            </div>
+            <AdminLogout />
+          </div>
+        </header>
+
         <main className="admin-content">{children}</main>
       </div>
     </div>

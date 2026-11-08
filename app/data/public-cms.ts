@@ -28,12 +28,20 @@ export const defaultRegistrationTracks: RegistrationTrack[] = [
   },
 ];
 
+export type HeroSlideItem = {
+  image: string;
+  hasLink?: boolean;
+  linkUrl?: string;
+  openInNewTab?: boolean;
+};
+
 export type HomepageSettings = {
   arabic: string;
   heroKicker: string;
   heroTitle: string;
   heroImage: string;
   heroImages?: string[];
+  heroSlides?: HeroSlideItem[];
   profileDescription: string;
   profileVideoUrl: string;
   valuesTitle: string;
@@ -47,15 +55,12 @@ export type HomepageSettings = {
 };
 
 export const defaultHomepageSettings: HomepageSettings = {
-  arabic: "معهد محمدية التربية الإسلامية الحديثة",
+  arabic: "معهد محمدية للتربية الإسلامية الحديثة",
   heroKicker: "Pondok Pesantren Modern",
   heroTitle: "MBS Purworejo",
   heroImage: "/images/card.jpeg",
-  heroImages: [
-    "/images/card.jpeg",
-    "/images/card.jpeg",
-    "/images/card.jpeg",
-  ],
+  heroImages: ["/images/card.jpeg"],
+  heroSlides: [{ image: "/images/card.jpeg", hasLink: false, linkUrl: "" }],
   profileDescription: "Pondok Pesantren Modern MBS Purworejo menghadirkan pendidikan Islami yang memadukan ilmu, karakter, dan kemandirian. Sejak 1986, kami mendampingi santri untuk bertumbuh menjadi pribadi yang beriman, berwawasan luas, dan membawa manfaat.",
   profileVideoUrl: "https://youtu.be/GrEcOhJ4900",
   valuesTitle: "Mendidik dengan Kasih Sayang, Keteladanan & Inspirasi",
@@ -179,26 +184,40 @@ export async function getPublicHomepageContent() {
   const rawSettings = settingsResult.data?.data && typeof settingsResult.data.data === "object" ? settingsResult.data.data as Partial<HomepageSettings> : null;
   const baseHeroImg = safeImageUrl(rawSettings?.heroImage, defaultHomepageSettings.heroImage);
 
-  let resolvedHeroImages: string[] = [];
-  if (Array.isArray(rawSettings?.heroImages) && rawSettings.heroImages.length > 0) {
-    resolvedHeroImages = rawSettings.heroImages
+  let resolvedHeroSlides: HeroSlideItem[] = [];
+  if (Array.isArray(rawSettings?.heroSlides) && rawSettings.heroSlides.length > 0) {
+    resolvedHeroSlides = rawSettings.heroSlides
+      .filter((s) => s && typeof s === "object" && typeof s.image === "string" && s.image.trim().length > 0)
+      .slice(0, 3)
+      .map((s) => ({
+        image: safeImageUrl(s.image, baseHeroImg),
+        hasLink: Boolean(s.hasLink),
+        linkUrl: typeof s.linkUrl === "string" ? s.linkUrl.trim() : "",
+        openInNewTab: Boolean(s.openInNewTab),
+      }));
+  } else if (Array.isArray(rawSettings?.heroImages) && rawSettings.heroImages.length > 0) {
+    resolvedHeroSlides = rawSettings.heroImages
       .filter((url) => typeof url === "string" && url.trim().length > 0)
-      .map((url) => safeImageUrl(url, baseHeroImg))
-      .slice(0, 3);
+      .slice(0, 3)
+      .map((url) => ({
+        image: safeImageUrl(url, baseHeroImg),
+        hasLink: false,
+        linkUrl: "",
+      }));
   }
 
-  // Duplicate up to 3 slides if empty or single image
-  if (resolvedHeroImages.length === 0) {
-    resolvedHeroImages = [baseHeroImg, baseHeroImg, baseHeroImg];
-  } else if (resolvedHeroImages.length === 1) {
-    resolvedHeroImages = [resolvedHeroImages[0], resolvedHeroImages[0], resolvedHeroImages[0]];
+  if (resolvedHeroSlides.length === 0) {
+    resolvedHeroSlides = [{ image: baseHeroImg, hasLink: false, linkUrl: "" }];
   }
+
+  const resolvedHeroImages = resolvedHeroSlides.map((s) => s.image);
 
   const settings: HomepageSettings = rawSettings ? {
     ...defaultHomepageSettings,
     ...rawSettings,
-    heroImage: baseHeroImg,
+    heroImage: resolvedHeroImages[0] || baseHeroImg,
     heroImages: resolvedHeroImages,
+    heroSlides: resolvedHeroSlides,
     valuesImage: safeImageUrl(rawSettings.valuesImage, defaultHomepageSettings.valuesImage),
     registrationAcademicYear: rawSettings.registrationAcademicYear || defaultHomepageSettings.registrationAcademicYear,
     registrationUrl: rawSettings.registrationUrl || defaultHomepageSettings.registrationUrl,

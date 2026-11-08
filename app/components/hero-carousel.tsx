@@ -16,29 +16,42 @@ function Chevron({ direction }: { direction: "left" | "right" }) {
   );
 }
 
+export type HeroSlideItem = {
+  image: string;
+  hasLink?: boolean;
+  linkUrl?: string;
+  openInNewTab?: boolean;
+};
+
 export default function HeroCarousel({
+  slides,
   images,
   src,
 }: {
+  slides?: HeroSlideItem[];
   images?: string[];
   src?: string;
 }) {
-  const resolvedList = Array.isArray(images) && images.length > 0
-    ? images
-    : src
-    ? [src]
-    : ["/images/card.jpeg"];
+  const resolvedSlides: HeroSlideItem[] = Array.isArray(slides) && slides.length > 0
+    ? slides
+    : Array.isArray(images) && images.length > 0
+    ? images.map((img) => ({ image: img, hasLink: false, linkUrl: "" }))
+    : [{ image: src || "/images/card.jpeg", hasLink: false, linkUrl: "" }];
 
-  const safeImages = resolvedList
+  const safeSlides = resolvedSlides
     .slice(0, 3)
-    .map((img) => safeImageUrl(img, "/images/card.jpeg"));
+    .map((item) => ({
+      ...item,
+      image: safeImageUrl(item.image, "/images/card.jpeg"),
+    }));
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const pauseTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const total = safeImages.length;
+  const total = safeSlides.length;
+  const activeSlide = safeSlides[activeIndex] || safeSlides[0];
 
   const nextSlide = useCallback(() => {
     setActiveIndex((prev) => (prev + 1) % total);
@@ -173,25 +186,37 @@ export default function HeroCarousel({
   return (
     <>
       <div ref={containerRef} className="hero-backdrop" aria-hidden="true">
-        {safeImages.map((imgSrc, index) => {
+        {safeSlides.map((slide, index) => {
           const isActive = index === activeIndex;
           return (
             <div
-              key={`${imgSrc}-${index}`}
+              key={`${slide.image}-${index}`}
               className={`hero-slide ${isActive ? "is-active" : ""}`}
             >
               <Image
                 className="hero-backdrop-image"
-                src={imgSrc}
+                src={slide.image}
                 alt=""
                 fill
                 priority={index === 0}
                 sizes="100vw"
+                unoptimized
               />
             </div>
           );
         })}
       </div>
+
+      {activeSlide.hasLink && activeSlide.linkUrl && (
+        <a
+          href={activeSlide.linkUrl}
+          target={activeSlide.openInNewTab ? "_blank" : undefined}
+          rel={activeSlide.openInNewTab ? "noopener noreferrer" : undefined}
+          className="hero-slide-clickable"
+          title="Klik untuk membuka tautan banner"
+          aria-label="Tautan banner aktif"
+        />
+      )}
 
       {total > 1 && (
         <div className="hero-carousel-controls">
@@ -224,7 +249,7 @@ export default function HeroCarousel({
             role="tablist"
             aria-label="Pilih banner"
           >
-            {safeImages.map((_, index) => {
+            {safeSlides.map((_, index) => {
               const isActive = index === activeIndex;
               return (
                 <button
