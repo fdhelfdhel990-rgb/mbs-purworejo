@@ -1,12 +1,12 @@
 import { createBrowserClient } from "@supabase/ssr";
+import { getSupabaseConfig } from "./config";
 
 export function hasSupabaseBrowserConfig() {
-  return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+  return Boolean(getSupabaseConfig());
 }
 
 export function createSupabaseBrowserClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) throw new Error("Konfigurasi Supabase belum lengkap.");
-  return createBrowserClient(url, key);
+  const config = getSupabaseConfig();
+  if (!config) throw new Error("Konfigurasi Supabase belum lengkap.");
+  return createBrowserClient(config.url, config.key);
 }
