@@ -44,3 +44,7 @@ next-env.d.ts
 # User uploads
 /public/uploads/
 
+
+# Local AI skills; keep project instructions (AGENTS.md) tracked.
+.agents/skills/
+

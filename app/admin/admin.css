@@ -33,6 +33,17 @@
 .admin-setup-note p { margin: 6px 0 0; }
 .admin-setup-note code { font-size: 11px; }
 .admin-form-error { margin: 0; color: #b43f36; font-size: 11px; line-height: 1.55; }
+.admin-request-count { align-self: center; padding: 8px 12px; border: 1px solid #dbe7d8; border-radius: 999px; background: #f1f6ef; color: var(--green-800); font-size: 11px; font-weight: 600; white-space: nowrap; }
+.admin-visit-request-list { display: grid; gap: 12px; }
+.admin-visit-request { display: grid; gap: 12px; }
+.admin-visit-request-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.admin-visit-request-heading h2 { margin: 0 0 4px; color: #263329; font-size: 15px; font-weight: 600; }
+.admin-visit-request-heading a { color: var(--green-800); font-size: 12px; }
+.admin-visit-request-heading a:hover { text-decoration: underline; }
+.admin-visit-request-heading time { color: #829087; font-size: 10px; text-align: right; }
+.admin-visit-request-date, .admin-visit-request-message { margin: 0; color: #59675c; font-size: 12px; line-height: 1.7; }
+.admin-visit-request-message { padding: 12px; border-radius: 6px; background: #f5f7f4; white-space: pre-wrap; overflow-wrap: anywhere; }
+.admin-visit-request-date strong { color: #344438; }
 .admin-success { margin: 0 0 16px; color: #27723a; font-size: 12px; }
 body:has(.admin-shell) .site-header, body:has(.admin-shell) .site-footer, body:has(.admin-shell) .whatsapp-fab,
 body:has(.admin-login-page) .site-header, body:has(.admin-login-page) .site-footer, body:has(.admin-login-page) .whatsapp-fab { display: none; }
@@ -175,6 +186,8 @@ body:has(.admin-login-page) .site-header, body:has(.admin-login-page) .site-foot
   .admin-stat-card > strong { font-size: 23px; }
   .admin-stat-card > small { font-size: 8px; }
   .admin-panel-card { padding: 15px; }
+  .admin-visit-request-heading { flex-direction: column; gap: 8px; }
+  .admin-visit-request-heading time { text-align: left; }
   .admin-content-form { grid-template-columns: minmax(0, 1fr); }
   .admin-content-form .is-wide { grid-column: auto; }
   .admin-collection-row { align-items: flex-start; flex-direction: column; }

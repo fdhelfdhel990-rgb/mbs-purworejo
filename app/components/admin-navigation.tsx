@@ -32,8 +32,9 @@ const navGroups: NavGroup[] = [
     category: "PENGATURAN & LAYANAN",
     items: [
       { href: "/admin/pendaftaran", label: "Pendaftaran (PSB)", number: "06" },
-      { href: "/admin/footer", label: "Kontak & Footer", number: "07" },
-      { href: "/admin/donasi", label: "Program Donasi", number: "08" },
+      { href: "/admin/kunjungan", label: "Permintaan Kunjungan", number: "07" },
+      { href: "/admin/footer", label: "Kontak & Footer", number: "08" },
+      { href: "/admin/donasi", label: "Program Donasi", number: "09" },
     ],
   },
 ];
